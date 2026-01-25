@@ -2,19 +2,26 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import webpush from "web-push";
 
-// Configure web-push with VAPID keys
-const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
-const vapidSubject = process.env.VAPID_SUBJECT || "mailto:admin@deepal-tracker.com";
+// Lazy initialization of web-push
+function getWebPush() {
+  const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+  const vapidSubject = process.env.VAPID_SUBJECT || "mailto:admin@deepal-tracker.com";
 
-if (vapidPublicKey && vapidPrivateKey) {
+  if (!vapidPublicKey || !vapidPrivateKey) {
+    return null;
+  }
+
   webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+  return webpush;
 }
 
 // GET - Check if odometer reminder is needed (called by cron)
 export async function GET() {
   try {
-    if (!vapidPublicKey || !vapidPrivateKey) {
+    const wp = getWebPush();
+
+    if (!wp) {
       return NextResponse.json(
         { error: "VAPID keys not configured" },
         { status: 500 }
@@ -79,7 +86,7 @@ export async function GET() {
       let sent = 0;
       for (const sub of subscriptions) {
         try {
-          await webpush.sendNotification(
+          await wp.sendNotification(
             {
               endpoint: sub.endpoint,
               keys: {
