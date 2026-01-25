@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Vehicle {
+  id            String   @id @default(cuid())
+  make          String   @default("Deepal")
+  model         String   @default("S05")
+  year          Int      @default(2026)
+  trim          String   @default("REEV")
+  color         String   @default("Eclipse Black")
+  vin           String?  @unique
+  purchaseDate  DateTime @default(now())
+  purchasePrice Float    @default(0)
+  odometerStart Int      @default(0)
+  currentOdometer Int    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  charges    Charge[]
+  fuelUps    FuelUp[]
+  services   Service[]
+  trips      Trip[]
+  odometerLogs OdometerLog[]
+}
+
+model Charge {
+  id            String   @id @default(cuid())
+  vehicleId     String
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  date          DateTime
+  location      String
+  chargeType    String   // AC_7kW, AC_22kW, DC_50kW
+
+  odometerStart Int?
+  odometerEnd   Int?
+
+  kwhCharged    Float
+  costPEN       Float
+
+  durationMinutes Int?
+  notes         String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([vehicleId])
+  @@index([date])
+}
+
+model FuelUp {
+  id            String   @id @default(cuid())
+  vehicleId     String
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  date          DateTime
+  odometer      Int
+
+  liters        Float
+  costPEN       Float
+  costPerLiter  Float
+
+  location      String?
+  notes         String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([vehicleId])
+  @@index([date])
+}
+
+model Service {
+  id            String   @id @default(cuid())
+  vehicleId     String
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  date          DateTime
+  odometer      Int
+
+  serviceType   String
+  costPEN       Float
+
+  provider      String?
+  notes         String?
+  receiptUrl    String?  // URL to uploaded receipt image
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([vehicleId])
+  @@index([date])
+}
+
+model Trip {
+  id            String   @id @default(cuid())
+  vehicleId     String
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  date          DateTime
+  startOdometer Int
+  endOdometer   Int
+  distance      Int
+
+  purpose       String   // work, personal, weekend
+  mode          String   // electric, reev, mixed
+
+  notes         String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([vehicleId])
+  @@index([date])
+}
+
+model OdometerLog {
+  id            String   @id @default(cuid())
+  vehicleId     String
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  date          DateTime @default(now())
+  odometer      Int
+  batteryLevel  Int?     // 0-100
+  notes         String?
+
+  createdAt     DateTime @default(now())
+
+  @@index([vehicleId])
+  @@index([date])
+}
+
+model Settings {
+  id                    String   @id @default(cuid())
+
+  currency              String   @default("PEN")
+  units                 String   @default("metric")
+  language              String   @default("es")
+  theme                 String   @default("dark")
+
+  notificationsEnabled  Boolean  @default(true)
+  electricityRateKwh    Float    @default(0.73)
+
+  // Push notification subscription
+  pushSubscription      String?  @db.Text
+  lastOdometerReminder  DateTime?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model PushSubscription {
+  id            String   @id @default(cuid())
+  endpoint      String   @unique
+  p256dh        String
+  auth          String
+  createdAt     DateTime @default(now())
+}
