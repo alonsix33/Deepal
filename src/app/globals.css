@@ -1,0 +1,186 @@
+@import "tailwindcss";
+
+:root {
+  /* Deepal OS 3.0 Color Palette */
+  --deepal-black: #0A0A0A;
+  --deepal-dark: #121212;
+  --deepal-card: #1A1A1A;
+  --deepal-border: #2A2A2A;
+
+  /* Accent Colors */
+  --deepal-cyan: #00D4FF;
+  --deepal-blue: #0095FF;
+  --deepal-teal: #00CED1;
+
+  /* Neutral Colors */
+  --deepal-silver: #C0C0C0;
+  --deepal-gray: #8A8A8A;
+  --deepal-muted: #6A6A6A;
+
+  /* Status Colors */
+  --deepal-success: #00CED1;
+  --deepal-warning: #FFA500;
+  --deepal-error: #FF4444;
+
+  /* Background and Foreground */
+  --background: #0A0A0A;
+  --foreground: #EDEDED;
+
+  /* Card */
+  --card: #1A1A1A;
+  --card-foreground: #EDEDED;
+
+  /* Border and Input */
+  --border: #2A2A2A;
+  --input: #2A2A2A;
+  --ring: #00D4FF;
+
+  /* Primary */
+  --primary: #00D4FF;
+  --primary-foreground: #0A0A0A;
+
+  /* Secondary */
+  --secondary: #1A1A1A;
+  --secondary-foreground: #C0C0C0;
+
+  /* Muted */
+  --muted: #2A2A2A;
+  --muted-foreground: #8A8A8A;
+
+  /* Accent */
+  --accent: #0095FF;
+  --accent-foreground: #FFFFFF;
+
+  /* Destructive */
+  --destructive: #FF4444;
+  --destructive-foreground: #FFFFFF;
+
+  /* Radius */
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-deepal-cyan: var(--deepal-cyan);
+  --color-deepal-blue: var(--deepal-blue);
+  --color-deepal-teal: var(--deepal-teal);
+  --color-deepal-warning: var(--deepal-warning);
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+}
+
+/* Glassmorphism Effect */
+.glass {
+  background: rgba(26, 26, 26, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Glow Effects */
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.glow-blue {
+  box-shadow: 0 0 20px rgba(0, 149, 255, 0.3);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+/* Gradient Backgrounds */
+.gradient-deepal {
+  background: linear-gradient(135deg, #0A0A0A 0%, #121212 50%, #1A1A1A 100%);
+}
+
+.gradient-card {
+  background: linear-gradient(180deg, rgba(26, 26, 26, 0.9) 0%, rgba(18, 18, 18, 0.9) 100%);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--deepal-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--deepal-gray);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--deepal-silver);
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Number input without spinner */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
