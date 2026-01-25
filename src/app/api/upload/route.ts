@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put, del } from "@vercel/blob";
+import { v2 as cloudinary } from "cloudinary";
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // POST - Upload a receipt image
 export async function POST(request: NextRequest) {
@@ -29,21 +36,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique filename
-    const timestamp = Date.now();
-    const extension = file.name.split(".").pop() || "jpg";
-    const filename = `receipts/${timestamp}-${Math.random().toString(36).substring(7)}.${extension}`;
+    // Convert file to base64
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-    // Upload to Vercel Blob
-    const blob = await put(filename, file, {
-      access: "public",
-      addRandomSuffix: false,
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(base64, {
+      folder: "deepal-receipts",
+      resource_type: "image",
+      transformation: [
+        { quality: "auto:good" },
+        { fetch_format: "auto" },
+      ],
     });
 
     return NextResponse.json({
       success: true,
-      url: blob.url,
-      filename: blob.pathname,
+      url: result.secure_url,
+      publicId: result.public_id,
     });
   } catch (error) {
     console.error("Error uploading file:", error);
@@ -57,13 +68,13 @@ export async function POST(request: NextRequest) {
 // DELETE - Delete a receipt image
 export async function DELETE(request: NextRequest) {
   try {
-    const { url } = await request.json();
+    const { publicId } = await request.json();
 
-    if (!url) {
-      return NextResponse.json({ error: "No URL provided" }, { status: 400 });
+    if (!publicId) {
+      return NextResponse.json({ error: "No publicId provided" }, { status: 400 });
     }
 
-    await del(url);
+    await cloudinary.uploader.destroy(publicId);
 
     return NextResponse.json({ success: true });
   } catch (error) {
