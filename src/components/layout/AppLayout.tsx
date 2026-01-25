@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Header } from "./Header";
 import { BottomNav } from "./BottomNav";
 import { Sidebar } from "./Sidebar";
 import { cn } from "@/lib/utils";
+import { registerServiceWorker } from "@/lib/serviceWorker";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,11 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    // Register service worker on mount
+    registerServiceWorker();
+  }, []);
 
   return (
     <div className="min-h-screen gradient-deepal">
