@@ -68,8 +68,8 @@ export async function GET() {
         body: lastLog
           ? `Han pasado ${daysSinceLastLog} dias desde tu ultimo registro. Registra tu kilometraje actual.`
           : "No has registrado tu kilometraje este mes. Registra tu kilometraje actual.",
-        icon: "/icons/icon-192x192.png",
-        badge: "/icons/icon-72x72.png",
+        icon: "/icons/icon.svg",
+        badge: "/icons/icon.svg",
         data: {
           type: "odometer_reminder",
           url: "/",

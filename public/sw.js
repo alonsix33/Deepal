@@ -142,8 +142,8 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: data.body || "Nueva notificacion",
-    icon: data.icon || "/icons/icon-192x192.png",
-    badge: data.badge || "/icons/icon-72x72.png",
+    icon: data.icon || "/icons/icon.svg",
+    badge: data.badge || "/icons/icon.svg",
     vibrate: [100, 50, 100],
     data: data.data || {},
     actions: [
