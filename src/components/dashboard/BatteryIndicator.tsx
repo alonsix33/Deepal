@@ -41,7 +41,7 @@ export function BatteryIndicator({
           )}
           <span className="text-3xl font-bold mt-1">{level}%</span>
           <span className="text-sm text-[var(--muted-foreground)]">
-            Bateria
+            Batería
           </span>
         </div>
       </CircularProgress>
@@ -53,7 +53,7 @@ export function BatteryIndicator({
           <span className="text-[var(--muted-foreground)] ml-1">km</span>
         </span>
         <span className="text-sm text-[var(--muted-foreground)]">
-          autonomia
+          autonomía
         </span>
       </div>
     </div>

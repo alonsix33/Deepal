@@ -80,12 +80,12 @@ export default function MaintenancePage() {
               }`}
             />
             <div>
-              <p className="font-medium">Proximo Servicio</p>
+              <p className="font-medium">Próximo Servicio</p>
               <p className="text-sm text-[var(--muted-foreground)]">
                 {kmToNextService > 0 ? (
                   <>
                     Faltan <span className="font-bold">{formatKm(kmToNextService)}</span> para
-                    el proximo servicio programado a los {formatKm(nextServiceKm)}.
+                    el próximo servicio programado a los {formatKm(nextServiceKm)}.
                   </>
                 ) : (
                   <>
@@ -134,7 +134,7 @@ export default function MaintenancePage() {
               <Wrench className="w-12 h-12 mx-auto text-[var(--muted-foreground)] mb-4" />
               <p className="text-lg font-medium">No hay servicios registrados</p>
               <p className="text-[var(--muted-foreground)] mt-1">
-                Registra el primer servicio de tu vehiculo
+                Registra el primer servicio de tu vehículo
               </p>
               <Link href="/maintenance/new" className="mt-4 inline-block">
                 <Button variant="cyan" className="gap-2">

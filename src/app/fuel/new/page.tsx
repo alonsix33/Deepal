@@ -116,7 +116,7 @@ export default function NewFuelPage() {
 
           {/* Location */}
           <GlassCard>
-            <h3 className="font-semibold mb-4">Ubicacion</h3>
+            <h3 className="font-semibold mb-4">Ubicación</h3>
             <div className="space-y-2">
               <Label htmlFor="location">Gasolinera (opcional)</Label>
               <Input
@@ -135,7 +135,7 @@ export default function NewFuelPage() {
             <h3 className="font-semibold mb-4">Detalles de la Carga</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="odometer">Odometro (km)</Label>
+                <Label htmlFor="odometer">Odómetro (km)</Label>
                 <Input
                   id="odometer"
                   type="number"

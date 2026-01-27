@@ -109,8 +109,8 @@ export const CHARGE_LOCATIONS: Record<ChargeLocation, string> = {
 
 export const CHARGE_TYPES: Record<Charge["chargeType"], string> = {
   AC_7kW: "AC 7kW (Casa)",
-  AC_22kW: "AC 22kW (Rapido)",
-  DC_50kW: "DC 50kW+ (Ultra Rapido)",
+  AC_22kW: "AC 22kW (Rápido)",
+  DC_50kW: "DC 50kW+ (Ultra Rápido)",
 };
 
 export const SERVICE_TYPES = [
@@ -119,10 +119,10 @@ export const SERVICE_TYPES = [
   "Tercer servicio (25,000 km)",
   "Servicio mayor (40,000 km)",
   "Cambio de aceite",
-  "Rotacion de llantas",
+  "Rotación de llantas",
   "Frenos",
-  "Bateria 12V",
-  "Revision general",
+  "Batería 12V",
+  "Revisión general",
   "Otro",
 ];
 
@@ -133,7 +133,7 @@ export const TRIP_PURPOSES: Record<Trip["purpose"], string> = {
 };
 
 export const TRIP_MODES: Record<Trip["mode"], string> = {
-  electric: "Electrico",
+  electric: "Eléctrico",
   reev: "REEV (Generador)",
   mixed: "Mixto",
 };

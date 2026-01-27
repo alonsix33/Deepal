@@ -113,7 +113,7 @@ export default function HomePage() {
           <StatCard
             title="Este Mes"
             value={formatCurrency(stats.totalChargeCost + stats.totalFuelCost)}
-            subtitle="Costo total energia"
+            subtitle="Costo total energía"
             icon={Zap}
             color="cyan"
           />
@@ -125,7 +125,7 @@ export default function HomePage() {
             color="blue"
           />
           <StatCard
-            title="Uso Electrico"
+            title="Uso Eléctrico"
             value={`${Math.round(stats.electricUsagePercent)}%`}
             subtitle="vs combustible"
             icon={Fuel}
@@ -153,7 +153,7 @@ export default function HomePage() {
 
           {/* Vehicle Summary */}
           <GlassCard>
-            <h3 className="font-semibold mb-4">Resumen del Vehiculo</h3>
+            <h3 className="font-semibold mb-4">Resumen del Vehículo</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-[var(--border)]">
                 <span className="text-[var(--muted-foreground)]">
@@ -198,7 +198,7 @@ export default function HomePage() {
             <Link href="/vehicle" className="block mt-4">
               <Button variant="outline" className="w-full gap-2">
                 <Car className="w-4 h-4" />
-                Ver detalles del vehiculo
+                Ver detalles del vehículo
               </Button>
             </Link>
           </GlassCard>

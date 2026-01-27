@@ -98,7 +98,7 @@ export default function AnalyticsPage() {
     }
 
     return [
-      { name: "Electrico", value: totalElectric, color: COLORS.cyan },
+      { name: "Eléctrico", value: totalElectric, color: COLORS.cyan },
       { name: "Combustible", value: totalFuel, color: COLORS.warning },
     ].filter((d) => d.value > 0);
   }, [charges, fuelUps]);
@@ -145,9 +145,9 @@ export default function AnalyticsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold">Estadisticas</h1>
+          <h1 className="text-2xl font-bold">Estadísticas</h1>
           <p className="text-[var(--muted-foreground)]">
-            Analisis de consumo y costos
+            Análisis de consumo y costos
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export default function AnalyticsPage() {
               </div>
               <div>
                 <p className="text-sm text-[var(--muted-foreground)]">
-                  Costo Electrico
+                  Costo Eléctrico
                 </p>
                 <p className="text-xl font-bold">
                   {formatCurrency(stats.totalChargeCost)}
@@ -205,7 +205,7 @@ export default function AnalyticsPage() {
               </div>
               <div>
                 <p className="text-sm text-[var(--muted-foreground)]">
-                  Uso Electrico
+                  Uso Eléctrico
                 </p>
                 <p className="text-xl font-bold">
                   {Math.round(stats.electricUsagePercent)}%
@@ -220,7 +220,7 @@ export default function AnalyticsPage() {
             <BarChart3 className="w-12 h-12 mx-auto text-[var(--muted-foreground)] mb-4" />
             <p className="text-lg font-medium">No hay datos para mostrar</p>
             <p className="text-[var(--muted-foreground)] mt-1">
-              Registra cargas y consumos para ver las estadisticas
+              Registra cargas y consumos para ver las estadísticas
             </p>
           </GlassCard>
         ) : (
@@ -255,7 +255,7 @@ export default function AnalyticsPage() {
                       <Legend />
                       <Bar
                         dataKey="electric"
-                        name="Electrico"
+                        name="Eléctrico"
                         fill={COLORS.cyan}
                         radius={[4, 4, 0, 0]}
                       />
@@ -282,7 +282,7 @@ export default function AnalyticsPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <GlassCard>
                   <h3 className="font-semibold mb-4">
-                    Distribucion de Energia
+                    Distribución de Energía
                   </h3>
                   <div className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">

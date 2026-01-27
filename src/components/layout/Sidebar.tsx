@@ -21,9 +21,9 @@ const navItems = [
   { href: "/charges", icon: Zap, label: "Cargas" },
   { href: "/fuel", icon: Fuel, label: "Combustible" },
   { href: "/maintenance", icon: Wrench, label: "Mantenimiento" },
-  { href: "/analytics", icon: BarChart3, label: "Estadisticas" },
-  { href: "/vehicle", icon: Car, label: "Vehiculo" },
-  { href: "/settings", icon: Settings, label: "Configuracion" },
+  { href: "/analytics", icon: BarChart3, label: "Estadísticas" },
+  { href: "/vehicle", icon: Car, label: "Vehículo" },
+  { href: "/settings", icon: Settings, label: "Configuración" },
 ];
 
 interface SidebarProps {
