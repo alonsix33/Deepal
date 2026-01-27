@@ -77,7 +77,7 @@ export default function SettingsPage() {
   // Handle push notification toggle
   const handleNotificationToggle = async () => {
     if (notificationStatus === "denied") {
-      alert("Las notificaciones estan bloqueadas. Por favor, habilitalas en la configuracion de tu navegador.");
+      alert("Las notificaciones están bloqueadas. Por favor, habilítalas en la configuración de tu navegador.");
       return;
     }
 
@@ -181,9 +181,9 @@ export default function SettingsPage() {
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <header>
-          <h1 className="text-2xl font-bold">Configuracion</h1>
+          <h1 className="text-2xl font-bold">Configuración</h1>
           <p className="text-[var(--muted-foreground)]">
-            Preferencias y ajustes de la aplicacion
+            Preferencias y ajustes de la aplicación
           </p>
         </header>
 
@@ -231,7 +231,7 @@ export default function SettingsPage() {
             </div>
             {notificationStatus === "denied" && (
               <p className="text-sm text-[var(--deepal-warning)]" role="alert">
-                Las notificaciones estan bloqueadas. Habilitalas en la configuracion de tu navegador.
+                Las notificaciones están bloqueadas. Habilítalas en la configuración de tu navegador.
               </p>
             )}
           </div>
@@ -241,7 +241,7 @@ export default function SettingsPage() {
         <GlassCard role="region" aria-labelledby="electricity-heading">
           <h2 id="electricity-heading" className="font-semibold mb-4 flex items-center gap-2">
             <Zap className="w-5 h-5 text-[var(--deepal-cyan)]" aria-hidden="true" />
-            Tarifa Electrica
+            Tarifa Eléctrica
           </h2>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -282,7 +282,7 @@ export default function SettingsPage() {
         <GlassCard role="region" aria-labelledby="vehicle-heading">
           <h2 id="vehicle-heading" className="font-semibold mb-4 flex items-center gap-2">
             <Car className="w-5 h-5 text-[var(--deepal-blue)]" aria-hidden="true" />
-            Vehiculo
+            Vehículo
           </h2>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -337,7 +337,7 @@ export default function SettingsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="es">Espanol</SelectItem>
+                  <SelectItem value="es">Español</SelectItem>
                   <SelectItem value="en">English</SelectItem>
                 </SelectContent>
               </Select>
@@ -353,7 +353,7 @@ export default function SettingsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="PEN">Soles (S/)</SelectItem>
-                  <SelectItem value="USD">Dolares ($)</SelectItem>
+                  <SelectItem value="USD">Dólares ($)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -364,7 +364,7 @@ export default function SettingsPage() {
         <GlassCard role="region" aria-labelledby="data-heading">
           <h2 id="data-heading" className="font-semibold mb-4 flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5 text-[var(--deepal-teal)]" aria-hidden="true" />
-            Gestion de Datos
+            Gestión de Datos
           </h2>
           <div className="space-y-4">
             {/* Export Excel */}
@@ -447,8 +447,8 @@ export default function SettingsPage() {
                 <DialogHeader>
                   <DialogTitle>Eliminar todos los datos</DialogTitle>
                   <DialogDescription>
-                    Esta accion eliminara permanentemente todos tus registros de
-                    cargas, combustible, mantenimiento y configuraciones. Esta
+                    Esta accion eliminará permanentemente todos tus registros de
+                    cargas, combustible, mantenimiento y configuraciónes. Esta
                     accion no se puede deshacer.
                   </DialogDescription>
                 </DialogHeader>
@@ -475,11 +475,11 @@ export default function SettingsPage() {
         <GlassCard role="region" aria-labelledby="info-heading">
           <h2 id="info-heading" className="font-semibold mb-4 flex items-center gap-2">
             <Info className="w-5 h-5 text-[var(--muted-foreground)]" aria-hidden="true" />
-            Informacion
+            Información
           </h2>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between py-2 border-b border-[var(--border)]">
-              <dt className="text-[var(--muted-foreground)]">Version</dt>
+              <dt className="text-[var(--muted-foreground)]">Versión</dt>
               <dd>1.0.0</dd>
             </div>
             <div className="flex justify-between py-2 border-b border-[var(--border)]">
@@ -492,8 +492,8 @@ export default function SettingsPage() {
             </div>
           </dl>
           <div className="mt-4 p-3 rounded-lg bg-[var(--secondary)] text-xs text-[var(--muted-foreground)]">
-            Deepal S05 REEV Tracker - Aplicacion para rastrear consumo, costos y
-            mantenimiento del vehiculo. Disenada con el estilo Deepal OS 3.0.
+            Deepal S05 REEV Tracker - Aplicación para rastrear consumo, costos y
+            mantenimiento del vehículo. Diseñada con el estilo Deepal OS 3.0.
           </div>
         </GlassCard>
       </div>

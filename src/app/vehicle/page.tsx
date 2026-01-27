@@ -43,19 +43,19 @@ export default function VehiclePage() {
       icon: Zap,
       items: [
         { label: "Tipo", value: "REEV (Range Extended EV)" },
-        { label: "Motor Electrico", value: "214 HP (160 kW), 320 Nm" },
+        { label: "Motor Eléctrico", value: "214 HP (160 kW), 320 Nm" },
         { label: "Generador", value: "1.5L 4-cil, 96 HP (solo genera electricidad)" },
-        { label: "Traccion", value: "RWD (Trasera)" },
-        { label: "Aceleracion", value: "0-100 km/h en 7.9s" },
+        { label: "Tracción", value: "RWD (Trasera)" },
+        { label: "Aceleración", value: "0-100 km/h en 7.9s" },
       ],
     },
     {
-      category: "Bateria y Autonomia",
+      category: "Batería y Autonomía",
       icon: Battery,
       items: [
-        { label: "Bateria", value: "27.28 kWh LFP (CATL)" },
-        { label: "Autonomia Electrica", value: "~125 km (real)" },
-        { label: "Autonomia Total", value: "1,129 km" },
+        { label: "Batería", value: "27.28 kWh LFP (CATL)" },
+        { label: "Autonomía Electrica", value: "~125 km (real)" },
+        { label: "Autonomía Total", value: "1,129 km" },
         { label: "Tanque Gasolina", value: "45-51 L" },
       ],
     },
@@ -83,8 +83,8 @@ export default function VehiclePage() {
   ];
 
   const warrantyInfo = [
-    { label: "Vehiculo", value: "5 anos o 120,000 km" },
-    { label: "Bateria/Alta Tension", value: "8 anos o 150,000 km" },
+    { label: "Vehículo", value: "5 años o 120,000 km" },
+    { label: "Batería/Alta Tensión", value: "8 años o 150,000 km" },
   ];
 
   return (
@@ -92,9 +92,9 @@ export default function VehiclePage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold">Mi Vehiculo</h1>
+          <h1 className="text-2xl font-bold">Mi Vehículo</h1>
           <p className="text-[var(--muted-foreground)]">
-            Informacion y especificaciones
+            Información y especificaciones
           </p>
         </div>
 
@@ -110,7 +110,7 @@ export default function VehiclePage() {
           <GlassCard>
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Car className="w-5 h-5 text-[var(--deepal-cyan)]" />
-              Informacion del Vehiculo
+              Información del Vehículo
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between py-2 border-b border-[var(--border)]">
@@ -122,11 +122,11 @@ export default function VehiclePage() {
                 <span className="font-medium">{vehicle.model}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-[var(--border)]">
-                <span className="text-[var(--muted-foreground)]">Ano</span>
+                <span className="text-[var(--muted-foreground)]">Año</span>
                 <span className="font-medium">{vehicle.year}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-[var(--border)]">
-                <span className="text-[var(--muted-foreground)]">Version</span>
+                <span className="text-[var(--muted-foreground)]">Versión</span>
                 <span className="font-medium">{vehicle.trim}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-[var(--border)]">
@@ -155,7 +155,7 @@ export default function VehiclePage() {
           <GlassCard>
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Shield className="w-5 h-5 text-[var(--deepal-blue)]" />
-              Garantia
+              Garantía
             </h3>
             <div className="space-y-3">
               {warrantyInfo.map((item, index) => (
@@ -191,7 +191,7 @@ export default function VehiclePage() {
 
         {/* Specifications */}
         <div className="space-y-4">
-          <h2 className="text-xl font-bold">Especificaciones Tecnicas</h2>
+          <h2 className="text-xl font-bold">Especificaciones Técnicas</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {specs.map((section) => (
               <GlassCard key={section.category}>

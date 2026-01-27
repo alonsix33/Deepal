@@ -59,11 +59,11 @@ export default function FuelPage() {
           <div className="flex items-start gap-3">
             <Fuel className="w-5 h-5 text-[var(--deepal-warning)] mt-0.5" />
             <div>
-              <p className="font-medium">Vehiculo REEV</p>
+              <p className="font-medium">Vehículo REEV</p>
               <p className="text-sm text-[var(--muted-foreground)]">
                 El Deepal S05 es un REEV (Range Extended EV). El motor de
                 gasolina solo genera electricidad y nunca impulsa las ruedas
-                directamente. Idealmente, usaras combustible muy raramente.
+                directamente. Idealmente, usarás combustible muy raramente.
               </p>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function FuelPage() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
           <Input
-            placeholder="Buscar por ubicacion..."
+            placeholder="Buscar por ubicación..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -114,7 +114,7 @@ export default function FuelPage() {
               </p>
               <p className="text-[var(--muted-foreground)] mt-1">
                 {fuelUps.length === 0
-                  ? "Excelente! Estas usando energia electrica"
+                  ? "Excelente! Estás usando energía eléctrica"
                   : "No se encontraron resultados"}
               </p>
               {fuelUps.length === 0 && (

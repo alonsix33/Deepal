@@ -93,7 +93,7 @@ export default function NewMaintenancePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="odometer">Odometro (km)</Label>
+                <Label htmlFor="odometer">Odómetro (km)</Label>
                 <Input
                   id="odometer"
                   type="number"

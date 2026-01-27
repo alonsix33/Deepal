@@ -55,7 +55,7 @@ export default function ChargesPage() {
           <div>
             <h1 className="text-2xl font-bold">Cargas</h1>
             <p className="text-[var(--muted-foreground)]">
-              Historial de cargas electricas
+              Historial de cargas eléctricas
             </p>
           </div>
           <Link href="/charges/new">
@@ -93,7 +93,7 @@ export default function ChargesPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
             <Input
-              placeholder="Buscar por ubicacion..."
+              placeholder="Buscar por ubicación..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"

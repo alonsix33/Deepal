@@ -20,9 +20,9 @@ export function Header({ onMenuClick }: HeaderProps) {
       "/charges": "Cargas",
       "/fuel": "Combustible",
       "/maintenance": "Mantenimiento",
-      "/analytics": "Estadisticas",
-      "/vehicle": "Vehiculo",
-      "/settings": "Configuracion",
+      "/analytics": "Estadísticas",
+      "/vehicle": "Vehículo",
+      "/settings": "Configuración",
     };
     return titles[pathname] || "DEEPAL S05";
   };

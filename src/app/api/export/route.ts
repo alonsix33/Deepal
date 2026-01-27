@@ -22,8 +22,8 @@ export async function GET() {
         ["Campo", "Valor"],
         ["Marca", vehicle.make],
         ["Modelo", vehicle.model],
-        ["Ano", vehicle.year],
-        ["Version", vehicle.trim],
+        ["Año", vehicle.year],
+        ["Versión", vehicle.trim],
         ["Color", vehicle.color],
         ["VIN", vehicle.vin || "N/A"],
         ["Fecha de Compra", vehicle.purchaseDate.toISOString().split("T")[0]],
@@ -33,12 +33,12 @@ export async function GET() {
       ];
       const vehicleSheet = XLSX.utils.aoa_to_sheet(vehicleData);
       vehicleSheet["!cols"] = [{ wch: 20 }, { wch: 30 }];
-      XLSX.utils.book_append_sheet(workbook, vehicleSheet, "Vehiculo");
+      XLSX.utils.book_append_sheet(workbook, vehicleSheet, "Vehículo");
     }
 
     // Charges sheet
     const chargesData = [
-      ["Fecha", "Ubicacion", "Tipo", "kWh", "Costo (S/)", "Duracion (min)", "Odometro", "Notas"],
+      ["Fecha", "Ubicación", "Tipo", "kWh", "Costo (S/)", "Duración (min)", "Odómetro", "Notas"],
       ...charges.map((c) => [
         c.date.toISOString().split("T")[0],
         c.location,
@@ -59,7 +59,7 @@ export async function GET() {
 
     // Fuel ups sheet
     const fuelData = [
-      ["Fecha", "Odometro", "Litros", "Costo (S/)", "Precio/Litro", "Ubicacion", "Notas"],
+      ["Fecha", "Odómetro", "Litros", "Costo (S/)", "Precio/Litro", "Ubicación", "Notas"],
       ...fuelUps.map((f) => [
         f.date.toISOString().split("T")[0],
         f.odometer,
@@ -79,7 +79,7 @@ export async function GET() {
 
     // Services sheet
     const servicesData = [
-      ["Fecha", "Odometro", "Tipo", "Costo (S/)", "Proveedor", "Notas"],
+      ["Fecha", "Odómetro", "Tipo", "Costo (S/)", "Proveedor", "Notas"],
       ...services.map((s) => [
         s.date.toISOString().split("T")[0],
         s.odometer,
@@ -98,7 +98,7 @@ export async function GET() {
 
     // Odometer logs sheet
     const odometerData = [
-      ["Fecha", "Kilometraje", "Nivel Bateria (%)", "Notas"],
+      ["Fecha", "Kilometraje", "Nivel Batería (%)", "Notas"],
       ...odometerLogs.map((o) => [
         o.date.toISOString().split("T")[0],
         o.odometer,
@@ -121,9 +121,9 @@ export async function GET() {
     const summaryData = [
       ["Resumen General", ""],
       ["", ""],
-      ["Total Kilometros Recorridos", totalKm],
+      ["Total Kilómetros Recorridos", totalKm],
       ["", ""],
-      ["--- CARGAS ELECTRICAS ---", ""],
+      ["--- CARGAS ELÉCTRICAS ---", ""],
       ["Total Cargas", charges.length],
       ["Total kWh Cargados", totalKwh.toFixed(2)],
       ["Costo Total Cargas", `S/ ${totalChargeCost.toFixed(2)}`],
@@ -139,13 +139,13 @@ export async function GET() {
       ["Costo Total Mantenimiento", `S/ ${totalServiceCost.toFixed(2)}`],
       ["", ""],
       ["--- TOTALES ---", ""],
-      ["Costo Total Energia", `S/ ${(totalChargeCost + totalFuelCost).toFixed(2)}`],
+      ["Costo Total Energía", `S/ ${(totalChargeCost + totalFuelCost).toFixed(2)}`],
       ["Costo Total General", `S/ ${(totalChargeCost + totalFuelCost + totalServiceCost).toFixed(2)}`],
       ["Costo por Kilometro", `S/ ${(totalKm > 0 ? (totalChargeCost + totalFuelCost) / totalKm : 0).toFixed(4)}`],
-      ["% Uso Electrico", `${(totalChargeCost + totalFuelCost > 0 ? (totalChargeCost / (totalChargeCost + totalFuelCost)) * 100 : 100).toFixed(1)}%`],
+      ["% Uso Eléctrico", `${(totalChargeCost + totalFuelCost > 0 ? (totalChargeCost / (totalChargeCost + totalFuelCost)) * 100 : 100).toFixed(1)}%`],
       ["", ""],
-      ["Tarifa Electrica", `S/ ${settings?.electricityRateKwh || 0.73}/kWh`],
-      ["Fecha de Exportacion", new Date().toISOString()],
+      ["Tarifa Eléctrica", `S/ ${settings?.electricityRateKwh || 0.73}/kWh`],
+      ["Fecha de Exportación", new Date().toISOString()],
     ];
     const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
     summarySheet["!cols"] = [{ wch: 30 }, { wch: 20 }];

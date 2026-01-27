@@ -96,7 +96,7 @@ export default function NewChargePage() {
           <div>
             <h1 className="text-2xl font-bold">Nueva Carga</h1>
             <p className="text-[var(--muted-foreground)]">
-              Registra una carga electrica
+              Registra una carga eléctrica
             </p>
           </div>
         </div>
@@ -138,7 +138,7 @@ export default function NewChargePage() {
 
           {/* Location */}
           <GlassCard>
-            <h3 className="font-semibold mb-4">Ubicacion</h3>
+            <h3 className="font-semibold mb-4">Ubicación</h3>
             <RadioGroup
               value={formData.location}
               onValueChange={handleLocationChange}
@@ -160,7 +160,7 @@ export default function NewChargePage() {
             </RadioGroup>
             {formData.location === "other" && (
               <Input
-                placeholder="Nombre de la ubicacion"
+                placeholder="Nombre de la ubicación"
                 value={formData.customLocation}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -230,7 +230,7 @@ export default function NewChargePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="durationMinutes">Duracion (min)</Label>
+                <Label htmlFor="durationMinutes">Duración (min)</Label>
                 <Input
                   id="durationMinutes"
                   type="number"
@@ -246,7 +246,7 @@ export default function NewChargePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="odometerEnd">Odometro (km)</Label>
+                <Label htmlFor="odometerEnd">Odómetro (km)</Label>
                 <Input
                   id="odometerEnd"
                   type="number"
