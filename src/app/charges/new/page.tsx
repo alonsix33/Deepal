@@ -10,12 +10,14 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useStore } from "@/store/useStore";
 import { CHARGE_TYPES, CHARGE_LOCATIONS, type Charge } from "@/types";
-import { ArrowLeft, Zap, Save } from "lucide-react";
+import { ArrowLeft, Zap, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function NewChargePage() {
   const router = useRouter();
-  const { addCharge, vehicle, settings } = useStore();
+  const { addChargeAsync, vehicle, settings, isLoading, error } = useStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
@@ -53,34 +55,42 @@ export default function NewChargePage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError(null);
 
     const locationName =
       formData.location === "other"
         ? formData.customLocation
         : CHARGE_LOCATIONS[formData.location as keyof typeof CHARGE_LOCATIONS];
 
-    addCharge({
-      vehicleId: vehicle.id,
-      date: `${formData.date}T${formData.time}:00`,
-      location: locationName,
-      chargeType: formData.chargeType,
-      odometerStart: formData.odometerStart
-        ? parseInt(formData.odometerStart)
-        : undefined,
-      odometerEnd: formData.odometerEnd
-        ? parseInt(formData.odometerEnd)
-        : undefined,
-      kwhCharged: parseFloat(formData.kwhCharged) || 0,
-      costPEN: parseFloat(formData.costPEN) || 0,
-      durationMinutes: formData.durationMinutes
-        ? parseInt(formData.durationMinutes)
-        : undefined,
-      notes: formData.notes || undefined,
-    });
+    try {
+      await addChargeAsync({
+        date: `${formData.date}T${formData.time}:00`,
+        location: locationName,
+        chargeType: formData.chargeType,
+        odometerStart: formData.odometerStart
+          ? parseInt(formData.odometerStart)
+          : undefined,
+        odometerEnd: formData.odometerEnd
+          ? parseInt(formData.odometerEnd)
+          : undefined,
+        kwhCharged: parseFloat(formData.kwhCharged) || 0,
+        costPEN: parseFloat(formData.costPEN) || 0,
+        durationMinutes: formData.durationMinutes
+          ? parseInt(formData.durationMinutes)
+          : undefined,
+        notes: formData.notes || undefined,
+      });
 
-    router.push("/charges");
+      router.push("/charges");
+    } catch (err) {
+      console.error("Error saving charge:", err);
+      setSubmitError(err instanceof Error ? err.message : "Error al guardar la carga");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -101,6 +111,13 @@ export default function NewChargePage() {
           </div>
         </div>
 
+        {/* Error Message */}
+        {(submitError || error) && (
+          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+            {submitError || error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Date & Time */}
           <GlassCard>
@@ -119,6 +136,7 @@ export default function NewChargePage() {
                     setFormData((prev) => ({ ...prev, date: e.target.value }))
                   }
                   required
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
@@ -131,6 +149,7 @@ export default function NewChargePage() {
                     setFormData((prev) => ({ ...prev, time: e.target.value }))
                   }
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -143,6 +162,7 @@ export default function NewChargePage() {
               value={formData.location}
               onValueChange={handleLocationChange}
               className="space-y-3"
+              disabled={isSubmitting}
             >
               {Object.entries(CHARGE_LOCATIONS).map(([key, label]) => (
                 <div key={key} className="flex items-center space-x-3">
@@ -170,6 +190,7 @@ export default function NewChargePage() {
                 }
                 className="mt-3"
                 required={formData.location === "other"}
+                disabled={isSubmitting}
               />
             )}
           </GlassCard>
@@ -186,6 +207,7 @@ export default function NewChargePage() {
                 }))
               }
               className="space-y-3"
+              disabled={isSubmitting}
             >
               {Object.entries(CHARGE_TYPES).map(([key, label]) => (
                 <div key={key} className="flex items-center space-x-3">
@@ -213,6 +235,7 @@ export default function NewChargePage() {
                   value={formData.kwhCharged}
                   onChange={(e) => handleKwhChange(e.target.value)}
                   required
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
@@ -227,6 +250,7 @@ export default function NewChargePage() {
                     setFormData((prev) => ({ ...prev, costPEN: e.target.value }))
                   }
                   required
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
@@ -243,6 +267,7 @@ export default function NewChargePage() {
                     }))
                   }
                   placeholder="Opcional"
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
@@ -259,6 +284,7 @@ export default function NewChargePage() {
                     }))
                   }
                   placeholder="Opcional"
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -273,19 +299,34 @@ export default function NewChargePage() {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, notes: e.target.value }))
               }
+              disabled={isSubmitting}
             />
           </GlassCard>
 
           {/* Submit */}
           <div className="flex gap-3">
             <Link href="/charges" className="flex-1">
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" disabled={isSubmitting}>
                 Cancelar
               </Button>
             </Link>
-            <Button type="submit" variant="cyan" className="flex-1 gap-2">
-              <Save className="w-4 h-4" />
-              Guardar Carga
+            <Button
+              type="submit"
+              variant="cyan"
+              className="flex-1 gap-2"
+              disabled={isSubmitting || isLoading}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Guardar Carga
+                </>
+              )}
             </Button>
           </div>
         </form>

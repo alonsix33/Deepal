@@ -49,7 +49,15 @@ import {
 } from "lucide-react";
 
 export default function SettingsPage() {
-  const { settings, updateSettings, vehicle, updateVehicle } = useStore();
+  const {
+    settings,
+    updateSettings,
+    updateSettingsAsync,
+    vehicle,
+    updateVehicle,
+    updateVehicleAsync,
+    initializeFromAPI,
+  } = useStore();
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [notificationStatus, setNotificationStatus] = useState<"loading" | "enabled" | "disabled" | "denied">("loading");
   const [isExporting, setIsExporting] = useState(false);
@@ -147,6 +155,10 @@ export default function SettingsPage() {
         if (imported.fuelUps) messages.push(`${imported.fuelUps} combustible`);
         if (imported.services) messages.push(`${imported.services} servicios`);
 
+        // Refresh store from API to get imported data
+        useStore.setState({ isInitialized: false });
+        await initializeFromAPI();
+
         setImportResult({
           success: true,
           message: `Importado: ${messages.join(", ")}`,
@@ -171,7 +183,14 @@ export default function SettingsPage() {
     }
   };
 
-  const handleResetData = () => {
+  const handleResetData = async () => {
+    try {
+      // Clear database data via API
+      await fetch("/api/reset", { method: "POST" });
+    } catch (error) {
+      console.error("Error resetting database:", error);
+    }
+    // Clear local storage
     localStorage.removeItem("deepal-s05-storage");
     window.location.reload();
   };
