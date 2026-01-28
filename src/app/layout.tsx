@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { StoreProvider } from "@/components/providers/StoreProvider";
 
 export const metadata: Metadata = {
   title: "Deepal S05 Tracker",
@@ -32,7 +33,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className="dark">
-      <body className="antialiased font-sans">{children}</body>
+      <body className="antialiased font-sans">
+        <StoreProvider>{children}</StoreProvider>
+      </body>
     </html>
   );
 }

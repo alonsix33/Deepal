@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useStore } from "@/store/useStore";
-import { ArrowLeft, Fuel, Save } from "lucide-react";
+import { ArrowLeft, Fuel, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function NewFuelPage() {
   const router = useRouter();
-  const { addFuelUp, vehicle } = useStore();
+  const { addFuelUpAsync, vehicle, isLoading, error } = useStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
@@ -44,21 +46,29 @@ export default function NewFuelPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError(null);
 
-    addFuelUp({
-      vehicleId: vehicle.id,
-      date: `${formData.date}T${formData.time}:00`,
-      odometer: parseInt(formData.odometer) || 0,
-      liters: parseFloat(formData.liters) || 0,
-      costPEN: parseFloat(formData.costPEN) || 0,
-      costPerLiter: parseFloat(formData.costPerLiter) || 0,
-      location: formData.location || undefined,
-      notes: formData.notes || undefined,
-    });
+    try {
+      await addFuelUpAsync({
+        date: `${formData.date}T${formData.time}:00`,
+        odometer: parseInt(formData.odometer) || 0,
+        liters: parseFloat(formData.liters) || 0,
+        costPEN: parseFloat(formData.costPEN) || 0,
+        costPerLiter: parseFloat(formData.costPerLiter) || 0,
+        location: formData.location || undefined,
+        notes: formData.notes || undefined,
+      });
 
-    router.push("/fuel");
+      router.push("/fuel");
+    } catch (err) {
+      console.error("Error saving fuel up:", err);
+      setSubmitError(err instanceof Error ? err.message : "Error al guardar el combustible");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -79,6 +89,13 @@ export default function NewFuelPage() {
           </div>
         </div>
 
+        {/* Error Message */}
+        {(submitError || error) && (
+          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+            {submitError || error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Date & Time */}
           <GlassCard>
@@ -97,6 +114,7 @@ export default function NewFuelPage() {
                     setFormData((prev) => ({ ...prev, date: e.target.value }))
                   }
                   required
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
@@ -109,6 +127,7 @@ export default function NewFuelPage() {
                     setFormData((prev) => ({ ...prev, time: e.target.value }))
                   }
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -126,6 +145,7 @@ export default function NewFuelPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, location: e.target.value }))
                 }
+                disabled={isSubmitting}
               />
             </div>
           </GlassCard>
@@ -148,6 +168,7 @@ export default function NewFuelPage() {
                     }))
                   }
                   required
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
@@ -161,6 +182,7 @@ export default function NewFuelPage() {
                   value={formData.liters}
                   onChange={(e) => handleLitersChange(e.target.value)}
                   required
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
@@ -173,6 +195,7 @@ export default function NewFuelPage() {
                   value={formData.costPEN}
                   onChange={(e) => handleCostChange(e.target.value)}
                   required
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
@@ -198,19 +221,34 @@ export default function NewFuelPage() {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, notes: e.target.value }))
               }
+              disabled={isSubmitting}
             />
           </GlassCard>
 
           {/* Submit */}
           <div className="flex gap-3">
             <Link href="/fuel" className="flex-1">
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" disabled={isSubmitting}>
                 Cancelar
               </Button>
             </Link>
-            <Button type="submit" variant="cyan" className="flex-1 gap-2">
-              <Save className="w-4 h-4" />
-              Guardar
+            <Button
+              type="submit"
+              variant="cyan"
+              className="flex-1 gap-2"
+              disabled={isSubmitting || isLoading}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Guardar
+                </>
+              )}
             </Button>
           </div>
         </form>
