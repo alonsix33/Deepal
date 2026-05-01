@@ -1,53 +1,41 @@
 "use client";
 
-import React from "react";
-import dynamic from "next/dynamic";
-import { AppLayout } from "@/components/layout/AppLayout";
-import { BatteryIndicator } from "@/components/dashboard/BatteryIndicator";
-import { StatCard } from "@/components/dashboard/StatCard";
-import { ActivityList } from "@/components/dashboard/ActivityList";
-import { GlassCard } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useStore } from "@/store/useStore";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { DeepalSilhouette } from "@/components/3d/DeepalSilhouette";
+import { ActivityList } from "@/components/dashboard/ActivityList";
 import { formatCurrency, formatKm } from "@/lib/utils";
+import { motion, type Variants } from "framer-motion";
 import {
   Zap,
   Fuel,
   Wrench,
-  TrendingUp,
   Plus,
   Car,
-  BatteryFull,
-  Route,
-  DollarSign,
-  ParkingCircle,
   Gauge,
+  ParkingCircle,
+  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 
-const CarModel = dynamic(
-  () => import("@/components/3d/CarModel").then((mod) => mod.CarModel),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-[250px] lg:h-[350px] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Car className="w-10 h-10 text-[var(--deepal-cyan)] animate-pulse" />
-          <span className="text-sm text-[var(--muted-foreground)]">
-            Cargando...
-          </span>
-        </div>
-      </div>
-    ),
-  }
-);
+const stagger: Variants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+};
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
 
 export default function HomePage() {
-  const { charges, fuelUps, services, getDashboardStats, currentBatteryLevel, settings } =
+  const { charges, fuelUps, services, getDashboardStats, settings } =
     useStore();
   const stats = getDashboardStats();
 
-  const totalKm = stats.totalKmDriven;
   const totalParkingCost = charges.reduce((s, c) => s + c.parkingCostPEN, 0);
   const totalEnergyCost = stats.totalChargeCost + stats.totalFuelCost;
   const grandTotal = totalEnergyCost + stats.totalMaintenanceCost;
@@ -81,146 +69,229 @@ export default function HomePage() {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5);
 
+  const electricPct = stats.electricUsagePercent;
+  const fuelPct = 100 - electricPct;
+
   return (
     <AppLayout>
-      <div className="space-y-4 pb-8">
-        {/* Hero - 3D + Battery */}
-        <GlassCard className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--deepal-cyan)]/5 via-transparent to-transparent" />
-          <div className="relative">
-            <div className="h-[200px] lg:h-[280px]">
-              <CarModel autoRotate showControls={false} />
+      <motion.div
+        className="space-y-4 pb-24"
+        variants={stagger}
+        initial="hidden"
+        animate="show"
+      >
+        {/* Hero - Car Silhouette + Quick Actions */}
+        <motion.div variants={fadeUp} className="card-premium overflow-hidden gradient-hero">
+          <div className="relative px-4 pt-4">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <h1 className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-widest">
+                  Deepal S05 REEV
+                </h1>
+                <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
+                  {formatKm(stats.totalKmDriven)} recorridos · S/ {settings.electricityRateKwh}/kWh
+                </p>
+              </div>
+              <Link
+                href="/vehicle"
+                className="flex items-center gap-1 text-[11px] text-[var(--deepal-cyan)]"
+              >
+                <Car className="w-3 h-3" />
+                <span>Ficha</span>
+              </Link>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[var(--black)]/90 to-transparent">
-              <div className="flex items-end justify-between">
-                <div>
-                  <BatteryIndicator
-                    level={currentBatteryLevel}
-                    range={stats.estimatedRange}
-                  />
+
+            <div className="flex items-center justify-center -mx-4">
+              <DeepalSilhouette className="w-full h-auto max-h-[160px]" />
+            </div>
+
+            <div className="flex items-center justify-between pb-4 -mx-4 px-4 bg-gradient-to-t from-[var(--black)]/60 to-transparent relative -mt-10 pt-10">
+              <div>
+                <div className="text-[10px] text-[var(--text-tertiary)] uppercase tracking-wider">
+                  Total invertido
                 </div>
-                <div className="flex gap-2">
-                  <Link href="/charges/new">
-                    <Button variant="cyan" size="sm" className="gap-1.5 text-xs h-9">
-                      <Plus className="w-3.5 h-3.5" />
-                      Carga
-                    </Button>
-                  </Link>
-                  <Link href="/fuel/new">
-                    <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9 border-[var(--deepal-cyan)]/30">
-                      <Fuel className="w-3.5 h-3.5" />
-                      Gas
-                    </Button>
-                  </Link>
+                <div className="text-2xl font-bold text-[var(--text-primary)]">
+                  {formatCurrency(
+                    stats.totalChargeCost +
+                      stats.totalFuelCost +
+                      stats.totalMaintenanceCost
+                  )}
                 </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Link href="/charges/new">
+                  <button className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--deepal-cyan)] text-[var(--black)] text-xs font-semibold active:scale-95 transition-transform">
+                    <Plus className="w-3.5 h-3.5" />
+                    Carga
+                  </button>
+                </Link>
+                <Link href="/fuel/new">
+                  <button className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-[var(--card-border)] text-xs font-medium text-[var(--text-primary)] active:scale-95 transition-transform">
+                    <Fuel className="w-3.5 h-3.5" />
+                    Gas
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
-        </GlassCard>
+        </motion.div>
 
-        {/* Tarifa badge */}
-        <div className="flex items-center justify-center gap-1 text-xs text-[var(--muted-foreground)]">
-          <span>Tarifa BT5B:</span>
-          <span className="font-semibold text-[var(--deepal-cyan)]">S/ {settings.electricityRateKwh}/kWh</span>
-          <span className="mx-1">·</span>
-          <span>Batería {settings.batteryCapacity} kWh</span>
-          <span className="mx-1">·</span>
-          <span>Eficiencia {Math.round(settings.chargingEfficiency * 100)}%</span>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <StatCard
-            title="Costo Total"
-            value={formatCurrency(grandTotal)}
-            subtitle="Energía + Mantenimiento"
-            icon={DollarSign}
-            color="cyan"
-          />
-          <StatCard
-            title="Costo/km"
-            value={formatCurrency(stats.averageCostPerKm)}
-            subtitle={`${formatKm(totalKm)} recorridos`}
-            icon={Gauge}
-            color="blue"
-          />
-          <StatCard
-            title="Uso Eléctrico"
-            value={`${Math.round(stats.electricUsagePercent)}%`}
-            subtitle="vs combustible (por costo)"
-            icon={BatteryFull}
-            color="teal"
-          />
-          <StatCard
-            title="Próximo Service"
-            value={formatKm(stats.nextServiceKm)}
-            subtitle="km restantes"
-            icon={Wrench}
-            color="warning"
-          />
-        </div>
-
-        {/* Secondary Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-3 rounded-xl bg-[var(--card)] border border-[var(--border)]">
-            <Zap className="w-4 h-4 text-[var(--deepal-cyan)] mx-auto mb-1" />
-            <div className="text-lg font-bold">{formatCurrency(stats.totalChargeCost)}</div>
-            <div className="text-[10px] text-[var(--muted-foreground)]">Electricidad</div>
+        {/* Energy Mix */}
+        <motion.div variants={fadeUp} className="card-premium p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+              Mix Energético
+            </h2>
+            <span className="text-[11px] text-[var(--text-tertiary)]">
+              Total {formatCurrency(totalEnergyCost)}
+            </span>
           </div>
-          <div className="text-center p-3 rounded-xl bg-[var(--card)] border border-[var(--border)]">
-            <Fuel className="w-4 h-4 text-[var(--deepal-warning)] mx-auto mb-1" />
-            <div className="text-lg font-bold">{formatCurrency(stats.totalFuelCost)}</div>
-            <div className="text-[10px] text-[var(--muted-foreground)]">Combustible</div>
-          </div>
-          <div className="text-center p-3 rounded-xl bg-[var(--card)] border border-[var(--border)]">
-            <ParkingCircle className="w-4 h-4 text-[var(--muted-foreground)] mx-auto mb-1" />
-            <div className="text-lg font-bold">{formatCurrency(totalParkingCost)}</div>
-            <div className="text-[10px] text-[var(--muted-foreground)]">Estacionamiento</div>
-          </div>
-        </div>
 
-        {/* Activity + Summary */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2">
-            <ActivityList
-              activities={recentActivities}
-              maxItems={5}
-              showViewAll
+          {/* Electric vs Fuel bar */}
+          <div className="relative h-8 rounded-full overflow-hidden bg-[var(--card-border)] mb-3">
+            <motion.div
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--deepal-cyan)] to-[var(--deepal-blue)]"
+              initial={{ width: 0 }}
+              animate={{ width: `${electricPct}%` }}
+              transition={{ duration: 1, ease: [0.32, 0.72, 0, 1] }}
+            />
+            <motion.div
+              className="absolute inset-y-0 right-0 bg-gradient-to-l from-[var(--fuel-amber)] to-[var(--fuel-amber)]/80"
+              initial={{ width: 0 }}
+              animate={{ width: `${fuelPct}%` }}
+              transition={{ duration: 1, ease: [0.32, 0.72, 0, 1] }}
             />
           </div>
 
-          <GlassCard>
-            <div className="flex items-center gap-2 mb-4">
-              <Route className="w-4 h-4 text-[var(--deepal-cyan)]" />
-              <h3 className="font-semibold text-sm">Resumen</h3>
+          <div className="flex justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[var(--deepal-cyan)]" />
+              <span className="text-[var(--text-secondary)]">Eléctrico</span>
+              <span className="font-semibold text-[var(--text-primary)]">
+                {Math.round(electricPct)}%
+              </span>
+              <span className="text-[var(--text-tertiary)]">
+                {formatCurrency(stats.totalChargeCost)}
+              </span>
             </div>
-            <div className="space-y-3">
-              {[
-                { label: "Km recorridos", value: formatKm(totalKm) },
-                { label: "Cargas", value: `${charges.length} cargas` },
-                { label: "Combustible", value: `${fuelUps.length} cargas` },
-                { label: "Servicios", value: `${services.length} servicios` },
-                { label: "Costo energía", value: formatCurrency(totalEnergyCost) },
-                { label: "Costo total", value: formatCurrency(grandTotal) },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="flex justify-between items-center py-1.5 border-b border-[var(--border)] last:border-0 text-sm"
-                >
-                  <span className="text-[var(--muted-foreground)]">{item.label}</span>
-                  <span className="font-medium">{item.value}</span>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[var(--fuel-amber)]" />
+              <span className="text-[var(--text-secondary)]">Combustible</span>
+              <span className="font-semibold text-[var(--text-primary)]">
+                {Math.round(fuelPct)}%
+              </span>
+              <span className="text-[var(--text-tertiary)]">
+                {formatCurrency(stats.totalFuelCost)}
+              </span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Quick Stats */}
+        <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
+          <div className="card-premium p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-[var(--deepal-cyan-dim)] flex items-center justify-center">
+                <Gauge className="w-4 h-4 text-[var(--deepal-cyan)]" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold tracking-tight">{formatCurrency(stats.averageCostPerKm)}</div>
+            <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
+              Costo por km · {formatKm(stats.totalKmDriven)} totales
+            </div>
+          </div>
+
+          <div className="card-premium p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-[var(--fuel-amber-dim)] flex items-center justify-center">
+                <Wrench className="w-4 h-4 text-[var(--fuel-amber)]" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold tracking-tight">{formatKm(stats.nextServiceKm)}</div>
+            <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
+              Próximo servicio · km restantes
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Cost Breakdown */}
+        <motion.div variants={fadeUp} className="card-premium p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+              Costos Acumulados
+            </h2>
+            <span className="text-sm font-bold">S/ {grandTotal.toFixed(2)}</span>
+          </div>
+
+          <div className="space-y-2.5">
+            {[
+              {
+                label: "Electricidad",
+                value: stats.totalChargeCost,
+                icon: Zap,
+                color: "text-[var(--deepal-cyan)]",
+                bg: "bg-[var(--deepal-cyan-dim)]",
+                bar: "bg-[var(--deepal-cyan)]",
+              },
+              {
+                label: "Combustible",
+                value: stats.totalFuelCost,
+                icon: Fuel,
+                color: "text-[var(--fuel-amber)]",
+                bg: "bg-[var(--fuel-amber-dim)]",
+                bar: "bg-[var(--fuel-amber)]",
+              },
+              {
+                label: "Estacionamiento",
+                value: totalParkingCost,
+                icon: ParkingCircle,
+                color: "text-[var(--parking-gold)]",
+                bg: "bg-[var(--parking-gold-dim)]",
+                bar: "bg-[var(--parking-gold)]",
+              },
+              {
+                label: "Mantenimiento",
+                value: stats.totalMaintenanceCost,
+                icon: Wrench,
+                color: "text-[var(--service-purple)]",
+                bg: "bg-[var(--service-purple-dim)]",
+                bar: "bg-[var(--service-purple)]",
+              },
+            ].map((item) => {
+              const pct = grandTotal > 0 ? (item.value / grandTotal) * 100 : 0;
+              return (
+                <div key={item.label} className="flex items-center gap-3">
+                  <div className={`w-7 h-7 rounded-lg ${item.bg} flex items-center justify-center shrink-0`}>
+                    <item.icon className={`w-3.5 h-3.5 ${item.color}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-[var(--text-secondary)]">{item.label}</span>
+                      <span className="font-medium text-[var(--text-primary)]">
+                        {formatCurrency(item.value)}
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-[var(--card-border)] overflow-hidden">
+                      <motion.div
+                        className={`h-full rounded-full ${item.bar}`}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${pct}%` }}
+                        transition={{ duration: 0.8, ease: [0.32, 0.72, 0, 1] }}
+                      />
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
-            <Link href="/vehicle" className="block mt-4">
-              <Button variant="outline" size="sm" className="w-full gap-2 text-xs">
-                <Car className="w-3.5 h-3.5" />
-                Detalles del vehículo
-              </Button>
-            </Link>
-          </GlassCard>
-        </div>
-      </div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Activity */}
+        <motion.div variants={fadeUp}>
+          <ActivityList activities={recentActivities} maxItems={5} showViewAll />
+        </motion.div>
+      </motion.div>
     </AppLayout>
   );
 }

@@ -79,10 +79,6 @@ interface AppState {
   updateSettings: (settings: Partial<Settings>) => void;
   updateSettingsAsync: (settings: Partial<Settings>) => Promise<void>;
 
-  // Dashboard
-  currentBatteryLevel: number;
-  setCurrentBatteryLevel: (level: number) => void;
-
   // Computed Stats
   getDashboardStats: () => DashboardStats;
 }
@@ -657,10 +653,6 @@ export const useStore = create<AppState>()(
         }
       },
 
-      // Dashboard
-      currentBatteryLevel: 87,
-      setCurrentBatteryLevel: (level) => set({ currentBatteryLevel: level }),
-
       // Computed Stats
       getDashboardStats: () => {
         const state = get();
@@ -699,11 +691,6 @@ export const useStore = create<AppState>()(
           ? lastServiceKm + 10000 - state.vehicle.currentOdometer
           : 5000 - state.vehicle.currentOdometer;
 
-        // Estimated range based on battery level (125 km full range)
-        const estimatedRange = Math.round(
-          (state.currentBatteryLevel / 100) * 125
-        );
-
         return {
           totalKmDriven,
           totalChargeCost,
@@ -712,8 +699,6 @@ export const useStore = create<AppState>()(
           electricUsagePercent,
           averageCostPerKm,
           nextServiceKm: Math.max(0, nextServiceKm),
-          currentBatteryLevel: state.currentBatteryLevel,
-          estimatedRange,
         };
       },
     }),

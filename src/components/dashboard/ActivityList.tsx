@@ -1,119 +1,123 @@
 "use client";
 
-import React from "react";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { Zap, Fuel, Wrench, ChevronRight } from "lucide-react";
-import { GlassCard } from "@/components/ui/card";
-import { formatDate, formatCurrency } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
-
-type ActivityType = "charge" | "fuel" | "service";
 
 interface Activity {
   id: string;
-  type: ActivityType;
+  type: "charge" | "fuel" | "service";
   date: string;
   location: string;
   cost: number;
-  detail?: string;
+  detail: string;
 }
 
-interface ActivityListProps {
+interface Props {
   activities: Activity[];
   maxItems?: number;
   showViewAll?: boolean;
-  className?: string;
 }
 
-const activityConfig = {
+const config = {
   charge: {
     icon: Zap,
-    label: "Carga",
     color: "text-[var(--deepal-cyan)]",
-    bg: "bg-[var(--deepal-cyan)]/10",
+    bg: "bg-[var(--deepal-cyan-dim)]",
     href: "/charges",
   },
   fuel: {
     icon: Fuel,
-    label: "Combustible",
-    color: "text-[var(--deepal-warning)]",
-    bg: "bg-[var(--deepal-warning)]/10",
+    color: "text-[var(--fuel-amber)]",
+    bg: "bg-[var(--fuel-amber-dim)]",
     href: "/fuel",
   },
   service: {
     icon: Wrench,
-    label: "Servicio",
-    color: "text-[var(--deepal-blue)]",
-    bg: "bg-[var(--deepal-blue)]/10",
+    color: "text-[var(--service-purple)]",
+    bg: "bg-[var(--service-purple-dim)]",
     href: "/maintenance",
   },
 };
 
-export function ActivityList({
-  activities,
-  maxItems = 5,
-  showViewAll = true,
-  className,
-}: ActivityListProps) {
-  const displayedActivities = activities.slice(0, maxItems);
-
-  if (activities.length === 0) {
-    return (
-      <GlassCard className={className}>
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-          <Zap className="w-10 h-10 text-[var(--muted-foreground)] mb-3" />
-          <p className="text-[var(--muted-foreground)]">
-            No hay actividad reciente
-          </p>
-          <p className="text-sm text-[var(--muted-foreground)] mt-1">
-            Registra tu primera carga para comenzar
-          </p>
-        </div>
-      </GlassCard>
-    );
-  }
+export function ActivityList({ activities, maxItems = 5, showViewAll }: Props) {
+  const items = activities.slice(0, maxItems);
 
   return (
-    <GlassCard className={cn("p-0", className)}>
-      <div className="p-4 border-b border-[var(--border)]">
-        <h3 className="font-semibold">Actividad Reciente</h3>
+    <div className="card-premium p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+            Actividad Reciente
+          </h2>
+          {activities.length > 0 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--card-border)] text-[var(--text-tertiary)]">
+              {activities.length}
+            </span>
+          )}
+        </div>
       </div>
-      <div className="divide-y divide-[var(--border)]">
-        {displayedActivities.map((activity) => {
-          const config = activityConfig[activity.type];
-          const Icon = config.icon;
 
-          return (
-            <div
-              key={activity.id}
-              className="flex items-center gap-3 p-4 hover:bg-[var(--secondary)]/50 transition-colors"
-            >
-              <div className={cn("p-2 rounded-lg", config.bg)}>
-                <Icon className={cn("w-4 h-4", config.color)} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{activity.location}</p>
-                <p className="text-sm text-[var(--muted-foreground)]">
-                  {formatDate(activity.date)}
-                  {activity.detail && ` - ${activity.detail}`}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">{formatCurrency(activity.cost)}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {items.length === 0 ? (
+        <div className="text-center py-8">
+          <div className="w-12 h-12 rounded-full bg-[var(--card-border)] flex items-center justify-center mx-auto mb-3">
+            <Zap className="w-5 h-5 text-[var(--text-tertiary)]" />
+          </div>
+          <p className="text-sm font-medium text-[var(--text-secondary)]">
+            Sin actividad aún
+          </p>
+          <p className="text-xs text-[var(--text-tertiary)] mt-1">
+            Registra tu primera carga o combustible
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-1">
+          {items.map((activity, i) => {
+            const cfg = config[activity.type];
+            const Icon = cfg.icon;
+            return (
+              <Link
+                key={activity.id}
+                href={cfg.href}
+                className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-[var(--card-border)]/50 active:bg-[var(--card-border)] transition-colors"
+              >
+                <div className={`w-9 h-9 rounded-xl ${cfg.bg} flex items-center justify-center shrink-0`}>
+                  <Icon className={`w-4 h-4 ${cfg.color}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-[var(--text-primary)] truncate">
+                      {activity.location}
+                    </span>
+                    <span className="text-xs font-semibold text-[var(--text-primary)] ml-2 shrink-0">
+                      {activity.cost > 0 ? formatCurrency(activity.cost) : ""}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-[var(--text-tertiary)]">
+                      {formatDate(activity.date)}
+                    </span>
+                    <span className="text-[10px] px-1 py-0.5 rounded bg-[var(--card-border)] text-[var(--text-tertiary)]">
+                      {activity.detail}
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-[var(--text-tertiary)] shrink-0" />
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
       {showViewAll && activities.length > maxItems && (
         <Link
-          href="/analytics"
-          className="flex items-center justify-center gap-2 p-3 text-sm text-[var(--primary)] hover:bg-[var(--secondary)]/50 transition-colors border-t border-[var(--border)]"
+          href="/charges"
+          className="flex items-center justify-center gap-1 mt-2 py-2 text-xs font-medium text-[var(--deepal-cyan)] rounded-xl hover:bg-[var(--deepal-cyan-dim)] transition-colors"
         >
           Ver toda la actividad
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-3 h-3" />
         </Link>
       )}
-    </GlassCard>
+    </div>
   );
 }

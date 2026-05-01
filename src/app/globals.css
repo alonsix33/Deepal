@@ -1,186 +1,273 @@
 @import "tailwindcss";
 
 :root {
-  /* Deepal OS 3.0 Color Palette */
-  --deepal-black: #0A0A0A;
-  --deepal-dark: #121212;
-  --deepal-card: #1A1A1A;
-  --deepal-border: #2A2A2A;
+  --black: #050505;
+  --black-2: #0A0A0A;
+  --dark: #0E0E10;
+  --dark-2: #141416;
+  --card: #1A1A1E;
+  --card-hover: #222226;
+  --card-border: #2A2A2E;
+  --card-border-hover: #3A3A3E;
 
-  /* Accent Colors */
   --deepal-cyan: #00D4FF;
-  --deepal-blue: #0095FF;
-  --deepal-teal: #00CED1;
+  --deepal-cyan-dim: rgba(0, 212, 255, 0.15);
+  --deepal-cyan-glow: rgba(0, 212, 255, 0.4);
+  --deepal-blue: #0088FF;
+  --deepal-blue-dim: rgba(0, 136, 255, 0.15);
+  --deepal-teal: #00E6A0;
+  --deepal-teal-dim: rgba(0, 230, 160, 0.15);
 
-  /* Neutral Colors */
-  --deepal-silver: #C0C0C0;
-  --deepal-gray: #8A8A8A;
-  --deepal-muted: #6A6A6A;
+  --energy-green: #00E676;
+  --energy-green-dim: rgba(0, 230, 118, 0.15);
+  --fuel-amber: #FF9500;
+  --fuel-amber-dim: rgba(255, 149, 0, 0.15);
+  --service-purple: #AF52DE;
+  --service-purple-dim: rgba(175, 82, 222, 0.15);
+  --parking-gold: #FFD700;
+  --parking-gold-dim: rgba(255, 215, 0, 0.12);
 
-  /* Status Colors */
-  --deepal-success: #00CED1;
-  --deepal-warning: #FFA500;
-  --deepal-error: #FF4444;
+  --warning: #FF9500;
+  --warning-dim: rgba(255, 149, 0, 0.15);
+  --error: #FF453A;
+  --error-dim: rgba(255, 69, 58, 0.15);
+  --success: #30D158;
+  --info: #5E5CE6;
 
-  /* Background and Foreground */
-  --background: #0A0A0A;
-  --foreground: #EDEDED;
+  --text-primary: #F5F5F7;
+  --text-secondary: #98989D;
+  --text-tertiary: #6E6E73;
+  --text-inverse: #050505;
 
-  /* Card */
-  --card: #1A1A1A;
-  --card-foreground: #EDEDED;
-
-  /* Border and Input */
-  --border: #2A2A2A;
-  --input: #2A2A2A;
-  --ring: #00D4FF;
-
-  /* Primary */
-  --primary: #00D4FF;
-  --primary-foreground: #0A0A0A;
-
-  /* Secondary */
-  --secondary: #1A1A1A;
-  --secondary-foreground: #C0C0C0;
-
-  /* Muted */
-  --muted: #2A2A2A;
-  --muted-foreground: #8A8A8A;
-
-  /* Accent */
-  --accent: #0095FF;
-  --accent-foreground: #FFFFFF;
-
-  /* Destructive */
-  --destructive: #FF4444;
-  --destructive-foreground: #FFFFFF;
-
-  /* Radius */
-  --radius: 0.75rem;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --color-black: var(--black);
+  --color-dark: var(--dark);
   --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
+  --color-card-border: var(--card-border);
+
   --color-deepal-cyan: var(--deepal-cyan);
   --color-deepal-blue: var(--deepal-blue);
   --color-deepal-teal: var(--deepal-teal);
-  --color-deepal-warning: var(--deepal-warning);
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
+  --color-energy-green: var(--energy-green);
+  --color-fuel-amber: var(--fuel-amber);
+  --color-service-purple: var(--service-purple);
+  --color-parking-gold: var(--parking-gold);
+
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-success: var(--success);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
 }
 
 * {
-  border-color: var(--border);
+  border-color: var(--card-border);
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  min-height: 100vh;
+  background: var(--black);
+  color: var(--text-primary);
+  font-family: "Inter Variable", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
 }
 
-/* Glassmorphism Effect */
+/* Premium Glassmorphism */
 .glass {
-  background: rgba(26, 26, 26, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(26, 26, 30, 0.72);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Glow Effects */
+.glass-strong {
+  background: rgba(20, 20, 22, 0.85);
+  backdrop-filter: blur(30px) saturate(1.6);
+  -webkit-backdrop-filter: blur(30px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Card Base */
+.card-premium {
+  background: var(--card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--card-border);
+  transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.card-premium:active {
+  transform: scale(0.985);
+}
+
+/* Gradients */
+.gradient-cyan {
+  background: linear-gradient(135deg, var(--deepal-cyan) 0%, var(--deepal-blue) 100%);
+}
+
+.gradient-card-accent {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 212, 255, 0.08) 0%,
+    rgba(0, 136, 255, 0.02) 100%
+  );
+}
+
+.gradient-hero {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -20%, rgba(0, 212, 255, 0.08) 0%, transparent 100%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(0, 230, 160, 0.04) 0%, transparent 100%);
+}
+
+/* Glows */
 .glow-cyan {
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+  box-shadow: 0 0 24px var(--deepal-cyan-glow);
 }
 
-.glow-blue {
-  box-shadow: 0 0 20px rgba(0, 149, 255, 0.3);
+.glow-text-cyan {
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
 }
 
-.text-glow-cyan {
-  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-}
-
-/* Gradient Backgrounds */
-.gradient-deepal {
-  background: linear-gradient(135deg, #0A0A0A 0%, #121212 50%, #1A1A1A 100%);
-}
-
-.gradient-card {
-  background: linear-gradient(180deg, rgba(26, 26, 26, 0.9) 0%, rgba(18, 18, 18, 0.9) 100%);
-}
-
-/* Custom Scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
 }
-
 ::-webkit-scrollbar-track {
-  background: var(--deepal-dark);
+  background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: var(--deepal-gray);
-  border-radius: 3px;
+  background: var(--card-border);
+  border-radius: 2px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--deepal-silver);
-}
-
-/* Animations */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
-  }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Number input without spinner */
+/* Hide number spinners */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+/* Range input styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--card-border);
+  border-radius: 2px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--deepal-cyan);
+  cursor: pointer;
+  box-shadow: 0 0 12px var(--deepal-cyan-glow);
+  border: 3px solid var(--black);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 16px var(--deepal-cyan-glow); }
+  50% { box-shadow: 0 0 32px var(--deepal-cyan-glow); }
+}
+
+@keyframes battery-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes float-3d {
+  0%, 100% { transform: translateY(0px) rotateY(0deg); }
+  25% { transform: translateY(-4px) rotateY(2deg); }
+  75% { transform: translateY(2px) rotateY(-2deg); }
+}
+
+@keyframes number-roll {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+.animate-battery-pulse {
+  animation: battery-pulse 1.5s ease-in-out infinite;
+}
+
+.animate-float-3d {
+  animation: float-3d 6s ease-in-out infinite;
+}
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+.stagger-7 { animation-delay: 0.35s; }
+.stagger-8 { animation-delay: 0.4s; }
+
+/* Safe area for mobile */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-primary, 0px);
 }

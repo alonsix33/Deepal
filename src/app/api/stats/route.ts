@@ -50,19 +50,15 @@ export async function GET() {
         vehicle.currentOdometer
     );
 
-    const batteryCapacity = settings?.batteryCapacity || 27.28;
-    const estimatedRange = Math.round((vehicle.currentOdometer > 0 ? 50 : 100) / 100 * (batteryCapacity / 27.28) * 125);
-
     return NextResponse.json({
       totalKmDriven,
       totalChargeCost,
       totalParkingCost,
       totalFuelCost,
       totalMaintenanceCost,
-      electricUsagePercent,
+      electricUsagePercent: Math.round(electricUsagePercent * 100) / 100,
       averageCostPerKm: Math.round(averageCostPerKm * 100) / 100,
       nextServiceKm,
-      estimatedRange,
       currentOdometer: vehicle.currentOdometer,
       totalCharges: charges.length,
       totalFuelUps: fuelUps.length,

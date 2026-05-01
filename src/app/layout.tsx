@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/components/providers/StoreProvider";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+  preload: true,
+});
 
 export const metadata: Metadata = {
   title: "Deepal S05 Tracker",
@@ -15,10 +23,6 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.svg",
     apple: "/apple-touch-icon.svg",
-  },
-  other: {
-    "mobile-web-app-capable": "yes",
-    "msapplication-tap-highlight": "no",
   },
 };
 
@@ -38,7 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className="dark">
-      <body className="antialiased font-sans">
+      <body className={`${inter.variable} antialiased`}>
         <StoreProvider>{children}</StoreProvider>
       </body>
     </html>

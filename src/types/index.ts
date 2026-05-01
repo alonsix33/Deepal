@@ -95,8 +95,6 @@ export interface DashboardStats {
   electricUsagePercent: number;
   averageCostPerKm: number;
   nextServiceKm: number;
-  currentBatteryLevel: number;
-  estimatedRange: number;
 }
 
 export type ChargeLocation =
