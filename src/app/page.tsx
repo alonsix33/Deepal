@@ -2,7 +2,6 @@
 
 import { useStore } from "@/store/useStore";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { DeepalSilhouette } from "@/components/3d/DeepalSilhouette";
 import { ActivityList } from "@/components/dashboard/ActivityList";
 import { formatCurrency, formatKm } from "@/lib/utils";
 import { motion, type Variants } from "framer-motion";
@@ -11,10 +10,8 @@ import {
   Fuel,
   Wrench,
   Plus,
-  Car,
   Gauge,
   ParkingCircle,
-  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -80,42 +77,38 @@ export default function HomePage() {
         initial="hidden"
         animate="show"
       >
-        {/* Hero - Car Silhouette + Quick Actions */}
-        <motion.div variants={fadeUp} className="card-premium overflow-hidden gradient-hero">
-          <div className="relative px-4 pt-4">
-            <div className="flex items-start justify-between mb-2">
-              <div>
-                <h1 className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-widest">
-                  Deepal S05 REEV
-                </h1>
-                <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
-                  {formatKm(stats.totalKmDriven)} recorridos · S/ {settings.electricityRateKwh}/kWh
-                </p>
-              </div>
-              <Link
-                href="/vehicle"
-                className="flex items-center gap-1 text-[11px] text-[var(--deepal-cyan)]"
-              >
-                <Car className="w-3 h-3" />
-                <span>Ficha</span>
-              </Link>
+        {/* Hero - Typographic Brand */}
+        <motion.div variants={fadeUp} className="relative overflow-hidden rounded-[var(--radius-md)] gradient-hero px-5 pt-8 pb-5">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--deepal-cyan)]/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-[var(--deepal-blue)]/5 rounded-full blur-2xl" />
+
+          <div className="relative">
+            <div className="text-[10px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.2em] mb-2">
+              Changan · Deepal
+            </div>
+            <h1 className="text-4xl font-black tracking-tight leading-none">
+              <span className="text-[var(--text-primary)]">Deepal</span>{" "}
+              <span className="bg-gradient-to-r from-[var(--deepal-cyan)] to-[var(--deepal-blue)] bg-clip-text text-transparent">
+                S05
+              </span>
+            </h1>
+            <div className="flex items-center gap-3 mt-3">
+              <span className="text-xs font-medium text-[var(--text-secondary)]">
+                REEV · 27.28 kWh
+              </span>
+              <span className="w-1 h-1 rounded-full bg-[var(--text-tertiary)]" />
+              <span className="text-xs text-[var(--text-tertiary)]">
+                {formatKm(stats.totalKmDriven)}
+              </span>
             </div>
 
-            <div className="flex items-center justify-center -mx-4">
-              <DeepalSilhouette className="w-full h-auto max-h-[160px]" />
-            </div>
-
-            <div className="flex items-center justify-between pb-4 -mx-4 px-4 bg-gradient-to-t from-[var(--black)]/60 to-transparent relative -mt-10 pt-10">
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-[var(--card-border)]">
               <div>
                 <div className="text-[10px] text-[var(--text-tertiary)] uppercase tracking-wider">
                   Total invertido
                 </div>
-                <div className="text-2xl font-bold text-[var(--text-primary)]">
-                  {formatCurrency(
-                    stats.totalChargeCost +
-                      stats.totalFuelCost +
-                      stats.totalMaintenanceCost
-                  )}
+                <div className="text-2xl font-bold text-[var(--text-primary)] mt-0.5">
+                  {formatCurrency(grandTotal)}
                 </div>
               </div>
 

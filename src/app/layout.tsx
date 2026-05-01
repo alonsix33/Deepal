@@ -19,10 +19,20 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Deepal S05",
+    startupImage: "/icons/icon.svg",
+  },
+  formatDetection: {
+    telephone: false,
   },
   icons: {
     icon: "/favicon.svg",
     apple: "/apple-touch-icon.svg",
+    shortcut: "/favicon.svg",
+  },
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "mobile-web-app-capable": "yes",
+    "msapplication-tap-highlight": "no",
   },
 };
 

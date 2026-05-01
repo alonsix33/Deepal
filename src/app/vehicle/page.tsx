@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import dynamic from "next/dynamic";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { GlassCard } from "@/components/ui/card";
 import { useStore } from "@/store/useStore";
@@ -16,23 +15,6 @@ import {
   Shield,
   Info,
 } from "lucide-react";
-
-const CarModel = dynamic(
-  () => import("@/components/3d/CarModel").then((mod) => mod.CarModel),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-[400px] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Car className="w-12 h-12 text-[var(--primary)] animate-pulse" />
-          <span className="text-sm text-[var(--muted-foreground)]">
-            Cargando modelo 3D...
-          </span>
-        </div>
-      </div>
-    ),
-  }
-);
 
 export default function VehiclePage() {
   const { vehicle } = useStore();
@@ -98,18 +80,45 @@ export default function VehiclePage() {
           </p>
         </div>
 
-        {/* 3D Model */}
-        <GlassCard className="overflow-hidden">
-          <div className="h-[400px]">
-            <CarModel autoRotate showControls />
+        {/* Vehicle Hero */}
+        <div className="card-premium overflow-hidden gradient-hero px-5 pt-6 pb-5">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-[var(--deepal-cyan)]/5 rounded-full blur-3xl" />
+          <div className="relative">
+            <div className="text-[10px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.2em] mb-2">
+              Changan · Deepal
+            </div>
+            <h1 className="text-3xl font-black tracking-tight leading-none">
+              <span className="text-[var(--text-primary)]">Deepal</span>{" "}
+              <span className="bg-gradient-to-r from-[var(--deepal-cyan)] to-[var(--deepal-blue)] bg-clip-text text-transparent">
+                S05
+              </span>
+            </h1>
+            <div className="flex items-center gap-3 mt-2">
+              <span className="text-xs font-medium text-[var(--text-secondary)]">{vehicle.trim}</span>
+              <span className="w-1 h-1 rounded-full bg-[var(--text-tertiary)]" />
+              <span className="text-xs text-[var(--text-tertiary)]">{vehicle.color}</span>
+              <span className="w-1 h-1 rounded-full bg-[var(--text-tertiary)]" />
+              <span className="text-xs text-[var(--text-tertiary)]">{vehicle.year}</span>
+            </div>
+            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-[var(--card-border)]">
+              <div>
+                <div className="text-[10px] text-[var(--text-tertiary)]">Odómetro</div>
+                <div className="text-lg font-bold">{formatKm(vehicle.currentOdometer)}</div>
+              </div>
+              <div className="w-px h-8 bg-[var(--card-border)]" />
+              <div>
+                <div className="text-[10px] text-[var(--text-tertiary)]">Compra</div>
+                <div className="text-lg font-bold">{formatDate(vehicle.purchaseDate)}</div>
+              </div>
+            </div>
           </div>
-        </GlassCard>
+        </div>
 
         {/* Vehicle Info */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
           <GlassCard>
-            <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <Car className="w-5 h-5 text-[var(--deepal-cyan)]" />
+            <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
+              <Car className="w-4 h-4 text-[var(--deepal-cyan)]" />
               Información del Vehículo
             </h3>
             <div className="space-y-3">
