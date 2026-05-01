@@ -17,7 +17,7 @@ export function AppLayout({ children, hideNav }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-[var(--black)]">
       <main className="min-h-screen">
-        <div className="max-w-lg mx-auto px-4 pt-4">
+        <div className="max-w-lg mx-auto px-4 pt-4 pb-24 safe-top">
           {children}
         </div>
       </main>

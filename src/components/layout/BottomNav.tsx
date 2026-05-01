@@ -23,7 +23,7 @@ export function BottomNav() {
   const router = useRouter();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div className="relative">
         <div className="absolute inset-0 bg-[var(--black)]/90 backdrop-blur-2xl border-t border-[var(--card-border)]" />
         <div className="relative flex items-center justify-around px-2 pt-1 pb-1">
