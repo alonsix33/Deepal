@@ -107,7 +107,9 @@ const defaultSettings: Settings = {
   language: "es",
   theme: "dark",
   notificationsEnabled: true,
-  electricityRateKwh: 0.73,
+  electricityRateKwh: 0.6861,
+  batteryCapacity: 27.28,
+  chargingEfficiency: 0.9,
 };
 
 export const useStore = create<AppState>()(
@@ -145,10 +147,15 @@ export const useStore = create<AppState>()(
             date: c.date.split("T")[0],
             location: c.location,
             chargeType: c.chargeType,
+            batteryStartPercent: c.batteryStartPercent,
+            batteryEndPercent: c.batteryEndPercent,
+            kwhCharged: c.kwhCharged,
+            kwhRate: c.kwhRate,
+            isFree: c.isFree,
+            parkingCostPEN: c.parkingCostPEN,
+            totalCost: c.totalCost,
             odometerStart: c.odometerStart,
             odometerEnd: c.odometerEnd,
-            kwhCharged: c.kwhCharged,
-            costPEN: c.costPEN,
             durationMinutes: c.durationMinutes,
             notes: c.notes,
             createdAt: c.createdAt,
@@ -160,9 +167,9 @@ export const useStore = create<AppState>()(
             vehicleId: f.vehicleId,
             date: f.date.split("T")[0],
             odometer: f.odometer,
-            liters: f.liters,
+            gallons: f.gallons,
             costPEN: f.costPEN,
-            costPerLiter: f.costPerLiter,
+            costPerGallon: f.costPerGallon,
             location: f.location,
             notes: f.notes,
             createdAt: f.createdAt,
@@ -211,6 +218,8 @@ export const useStore = create<AppState>()(
                   theme: settingsData.theme as "dark" | "light",
                   notificationsEnabled: settingsData.notificationsEnabled,
                   electricityRateKwh: settingsData.electricityRateKwh,
+                  batteryCapacity: settingsData.batteryCapacity,
+                  chargingEfficiency: settingsData.chargingEfficiency,
                 }
               : defaultSettings,
             isInitialized: true,
@@ -282,10 +291,15 @@ export const useStore = create<AppState>()(
             date: response.date.split("T")[0],
             location: response.location,
             chargeType: response.chargeType,
+            batteryStartPercent: response.batteryStartPercent,
+            batteryEndPercent: response.batteryEndPercent,
+            kwhCharged: response.kwhCharged,
+            kwhRate: response.kwhRate,
+            isFree: response.isFree,
+            parkingCostPEN: response.parkingCostPEN,
+            totalCost: response.totalCost,
             odometerStart: response.odometerStart,
             odometerEnd: response.odometerEnd,
-            kwhCharged: response.kwhCharged,
-            costPEN: response.costPEN,
             durationMinutes: response.durationMinutes,
             notes: response.notes,
             createdAt: response.createdAt,
@@ -395,9 +409,9 @@ export const useStore = create<AppState>()(
             vehicleId: response.vehicleId,
             date: response.date.split("T")[0],
             odometer: response.odometer,
-            liters: response.liters,
+            gallons: response.gallons,
             costPEN: response.costPEN,
-            costPerLiter: response.costPerLiter,
+            costPerGallon: response.costPerGallon,
             location: response.location,
             notes: response.notes,
             createdAt: response.createdAt,
@@ -653,7 +667,11 @@ export const useStore = create<AppState>()(
         const totalKmDriven =
           state.vehicle.currentOdometer - state.vehicle.odometerStart;
         const totalChargeCost = state.charges.reduce(
-          (sum, c) => sum + c.costPEN,
+          (sum, c) => sum + c.totalCost,
+          0
+        );
+        const totalParkingCost = state.charges.reduce(
+          (sum, c) => sum + c.parkingCostPEN,
           0
         );
         const totalFuelCost = state.fuelUps.reduce(
@@ -672,14 +690,14 @@ export const useStore = create<AppState>()(
         const averageCostPerKm =
           totalKmDriven > 0 ? totalEnergyCost / totalKmDriven : 0;
 
-        // Next service calculation (every 10,000 km)
+        // Next service calculation (1st at 5,000 km, then every 10,000 km)
         const lastService = state.services
-          .filter((s) => s.serviceType.includes("servicio"))
+          .filter((s) => s.serviceType.toLowerCase().includes("servicio"))
           .sort((a, b) => b.odometer - a.odometer)[0];
         const lastServiceKm = lastService?.odometer || 0;
-        const nextServiceKm =
-          Math.ceil((lastServiceKm + 1) / 10000) * 10000 -
-          state.vehicle.currentOdometer;
+        const nextServiceKm = lastService
+          ? lastServiceKm + 10000 - state.vehicle.currentOdometer
+          : 5000 - state.vehicle.currentOdometer;
 
         // Estimated range based on battery level (125 km full range)
         const estimatedRange = Math.round(

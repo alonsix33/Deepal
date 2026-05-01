@@ -268,7 +268,7 @@ export default function SettingsPage() {
               <Input
                 id="electricityRate"
                 type="number"
-                step="0.01"
+                step="0.0001"
                 min="0"
                 inputMode="decimal"
                 value={settings.electricityRateKwh}
@@ -280,17 +280,57 @@ export default function SettingsPage() {
                 aria-describedby="electricity-help"
               />
               <p id="electricity-help" className="text-xs text-[var(--muted-foreground)]">
-                Tarifa residencial Lima (Luz del Sur): ~S/ 0.73/kWh para consumo
-                mayor a 140 kWh/mes
+                Tarifa BT5B (tu edificio): S/ 0.6861/kWh
               </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="batteryCapacity">Capacidad Batería (kWh)</Label>
+                <Input
+                  id="batteryCapacity"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  inputMode="decimal"
+                  value={settings.batteryCapacity}
+                  onChange={(e) =>
+                    updateSettings({
+                      batteryCapacity: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="chargingEfficiency">Eficiencia Carga (%)</Label>
+                <Input
+                  id="chargingEfficiency"
+                  type="number"
+                  step="1"
+                  min="50"
+                  max="100"
+                  inputMode="numeric"
+                  value={Math.round(settings.chargingEfficiency * 100)}
+                  onChange={(e) =>
+                    updateSettings({
+                      chargingEfficiency: (parseInt(e.target.value) || 90) / 100,
+                    })
+                  }
+                />
+              </div>
             </div>
             <div className="p-3 rounded-lg bg-[var(--secondary)]" role="status" aria-live="polite">
               <p className="text-sm">
                 <span className="text-[var(--muted-foreground)]">
-                  Costo por carga completa (27.28 kWh):
+                  Costo carga completa ({settings.batteryCapacity} kWh):
                 </span>{" "}
                 <span className="font-medium">
-                  {formatCurrency(settings.electricityRateKwh * 27.28)}
+                  {formatCurrency(
+                    (settings.electricityRateKwh * settings.batteryCapacity) /
+                      settings.chargingEfficiency
+                  )}
+                </span>
+                <span className="text-xs text-[var(--muted-foreground)] ml-2">
+                  (con pérdidas)
                 </span>
               </p>
             </div>

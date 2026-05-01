@@ -29,7 +29,7 @@ export const vehicleAPI = {
 
   update: (data: VehicleUpdateData) =>
     fetchAPI<VehicleResponse>("/vehicle", {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify(data),
     }),
 };
@@ -46,7 +46,7 @@ export const chargesAPI = {
 
   update: (id: string, data: ChargeUpdateData) =>
     fetchAPI<ChargeResponse>(`/charges/${id}`, {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify(data),
     }),
 
@@ -68,7 +68,7 @@ export const fuelUpsAPI = {
 
   update: (id: string, data: FuelUpUpdateData) =>
     fetchAPI<FuelUpResponse>(`/fuel/${id}`, {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify(data),
     }),
 
@@ -90,7 +90,7 @@ export const servicesAPI = {
 
   update: (id: string, data: ServiceUpdateData) =>
     fetchAPI<ServiceResponse>(`/services/${id}`, {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify(data),
     }),
 
@@ -117,7 +117,7 @@ export const settingsAPI = {
 
   update: (data: SettingsUpdateData) =>
     fetchAPI<SettingsResponse>("/settings", {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify(data),
     }),
 };
@@ -204,10 +204,15 @@ interface ChargeResponse {
   date: string;
   location: string;
   chargeType: "AC_7kW" | "AC_22kW" | "DC_50kW";
+  batteryStartPercent?: number;
+  batteryEndPercent?: number;
+  kwhCharged: number;
+  kwhRate?: number;
+  isFree: boolean;
+  parkingCostPEN: number;
+  totalCost: number;
   odometerStart?: number;
   odometerEnd?: number;
-  kwhCharged: number;
-  costPEN: number;
   durationMinutes?: number;
   notes?: string;
   createdAt: string;
@@ -218,10 +223,15 @@ interface ChargeCreateData {
   date: string;
   location: string;
   chargeType: "AC_7kW" | "AC_22kW" | "DC_50kW";
+  batteryStartPercent?: number;
+  batteryEndPercent?: number;
+  kwhCharged: number;
+  kwhRate?: number;
+  isFree?: boolean;
+  parkingCostPEN?: number;
+  totalCost?: number;
   odometerStart?: number;
   odometerEnd?: number;
-  kwhCharged: number;
-  costPEN: number;
   durationMinutes?: number;
   notes?: string;
 }
@@ -234,9 +244,9 @@ interface FuelUpResponse {
   vehicleId: string;
   date: string;
   odometer: number;
-  liters: number;
+  gallons: number;
   costPEN: number;
-  costPerLiter: number;
+  costPerGallon: number;
   location?: string;
   notes?: string;
   createdAt: string;
@@ -246,9 +256,9 @@ interface FuelUpResponse {
 interface FuelUpCreateData {
   date: string;
   odometer: number;
-  liters: number;
+  gallons: number;
   costPEN: number;
-  costPerLiter: number;
+  costPerGallon: number;
   location?: string;
   notes?: string;
 }
@@ -309,6 +319,8 @@ interface SettingsResponse {
   theme: string;
   notificationsEnabled: boolean;
   electricityRateKwh: number;
+  batteryCapacity: number;
+  chargingEfficiency: number;
 }
 
 interface SettingsUpdateData {
@@ -318,6 +330,8 @@ interface SettingsUpdateData {
   theme?: string;
   notificationsEnabled?: boolean;
   electricityRateKwh?: number;
+  batteryCapacity?: number;
+  chargingEfficiency?: number;
 }
 
 // Export types for use in other files

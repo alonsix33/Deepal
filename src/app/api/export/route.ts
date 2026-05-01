@@ -38,13 +38,17 @@ export async function GET() {
 
     // Charges sheet
     const chargesData = [
-      ["Fecha", "Ubicación", "Tipo", "kWh", "Costo (S/)", "Duración (min)", "Odómetro", "Notas"],
+      ["Fecha", "Ubicación", "Tipo", "Batería Inicial", "Batería Final", "kWh", "Gratis", "Estacionamiento (S/)", "Costo Total (S/)", "Duración (min)", "Odómetro", "Notas"],
       ...charges.map((c) => [
         c.date.toISOString().split("T")[0],
         c.location,
         c.chargeType,
+        c.batteryStartPercent != null ? `${c.batteryStartPercent}%` : "",
+        c.batteryEndPercent != null ? `${c.batteryEndPercent}%` : "",
         c.kwhCharged,
-        c.costPEN,
+        c.isFree ? "Sí" : "No",
+        c.parkingCostPEN,
+        c.totalCost,
         c.durationMinutes || "",
         c.odometerEnd || "",
         c.notes || "",
@@ -52,20 +56,21 @@ export async function GET() {
     ];
     const chargesSheet = XLSX.utils.aoa_to_sheet(chargesData);
     chargesSheet["!cols"] = [
-      { wch: 12 }, { wch: 20 }, { wch: 12 }, { wch: 8 },
-      { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 30 },
+      { wch: 12 }, { wch: 20 }, { wch: 12 }, { wch: 14 },
+      { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 16 },
+      { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 30 },
     ];
     XLSX.utils.book_append_sheet(workbook, chargesSheet, "Cargas");
 
     // Fuel ups sheet
     const fuelData = [
-      ["Fecha", "Odómetro", "Litros", "Costo (S/)", "Precio/Litro", "Ubicación", "Notas"],
+      ["Fecha", "Odómetro", "Galones", "Costo (S/)", "Precio/Galón", "Ubicación", "Notas"],
       ...fuelUps.map((f) => [
         f.date.toISOString().split("T")[0],
         f.odometer,
-        f.liters,
+        f.gallons,
         f.costPEN,
-        f.costPerLiter,
+        f.costPerGallon,
         f.location || "",
         f.notes || "",
       ]),
@@ -73,7 +78,7 @@ export async function GET() {
     const fuelSheet = XLSX.utils.aoa_to_sheet(fuelData);
     fuelSheet["!cols"] = [
       { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 12 },
-      { wch: 12 }, { wch: 20 }, { wch: 30 },
+      { wch: 14 }, { wch: 20 }, { wch: 30 },
     ];
     XLSX.utils.book_append_sheet(workbook, fuelSheet, "Combustible");
 
@@ -111,27 +116,29 @@ export async function GET() {
     XLSX.utils.book_append_sheet(workbook, odometerSheet, "Registro Kilometraje");
 
     // Summary sheet
-    const totalChargeCost = charges.reduce((sum, c) => sum + c.costPEN, 0);
+    const totalChargeCost = charges.reduce((sum, c) => sum + c.totalCost, 0);
+    const totalParkingCost = charges.reduce((sum, c) => sum + c.parkingCostPEN, 0);
     const totalFuelCost = fuelUps.reduce((sum, f) => sum + f.costPEN, 0);
     const totalServiceCost = services.reduce((sum, s) => sum + s.costPEN, 0);
     const totalKwh = charges.reduce((sum, c) => sum + c.kwhCharged, 0);
-    const totalLiters = fuelUps.reduce((sum, f) => sum + f.liters, 0);
+    const totalGallons = fuelUps.reduce((sum, f) => sum + f.gallons, 0);
     const totalKm = vehicle ? vehicle.currentOdometer - vehicle.odometerStart : 0;
 
     const summaryData = [
       ["Resumen General", ""],
       ["", ""],
-      ["Total Kilómetros Recorridos", totalKm],
+      ["Total Kilómetros Recorridos", `${totalKm} km`],
       ["", ""],
       ["--- CARGAS ELÉCTRICAS ---", ""],
       ["Total Cargas", charges.length],
       ["Total kWh Cargados", totalKwh.toFixed(2)],
+      ["Costo Electricidad", `S/ ${(totalChargeCost - totalParkingCost).toFixed(2)}`],
+      ["Costo Estacionamiento", `S/ ${totalParkingCost.toFixed(2)}`],
       ["Costo Total Cargas", `S/ ${totalChargeCost.toFixed(2)}`],
-      ["Costo Promedio por Carga", `S/ ${(charges.length > 0 ? totalChargeCost / charges.length : 0).toFixed(2)}`],
       ["", ""],
       ["--- COMBUSTIBLE ---", ""],
       ["Total Cargas Combustible", fuelUps.length],
-      ["Total Litros", totalLiters.toFixed(2)],
+      ["Total Galones", totalGallons.toFixed(2)],
       ["Costo Total Combustible", `S/ ${totalFuelCost.toFixed(2)}`],
       ["", ""],
       ["--- MANTENIMIENTO ---", ""],
@@ -139,12 +146,14 @@ export async function GET() {
       ["Costo Total Mantenimiento", `S/ ${totalServiceCost.toFixed(2)}`],
       ["", ""],
       ["--- TOTALES ---", ""],
-      ["Costo Total Energía", `S/ ${(totalChargeCost + totalFuelCost).toFixed(2)}`],
-      ["Costo Total General", `S/ ${(totalChargeCost + totalFuelCost + totalServiceCost).toFixed(2)}`],
-      ["Costo por Kilometro", `S/ ${(totalKm > 0 ? (totalChargeCost + totalFuelCost) / totalKm : 0).toFixed(4)}`],
-      ["% Uso Eléctrico", `${(totalChargeCost + totalFuelCost > 0 ? (totalChargeCost / (totalChargeCost + totalFuelCost)) * 100 : 100).toFixed(1)}%`],
+      ["Costo Total Energía (Elec + Combustible)", `S/ ${(totalChargeCost + totalFuelCost).toFixed(2)}`],
+      ["Costo Total General (Energía + Mantenimiento)", `S/ ${(totalChargeCost + totalFuelCost + totalServiceCost).toFixed(2)}`],
+      ["Costo por Kilometro (Energía)", `S/ ${(totalKm > 0 ? (totalChargeCost + totalFuelCost) / totalKm : 0).toFixed(4)}`],
+      ["% Uso Eléctrico (por costo)", `${(totalChargeCost + totalFuelCost > 0 ? (totalChargeCost / (totalChargeCost + totalFuelCost)) * 100 : 100).toFixed(1)}%`],
       ["", ""],
-      ["Tarifa Eléctrica", `S/ ${settings?.electricityRateKwh || 0.73}/kWh`],
+      ["Tarifa Eléctrica", `S/ ${settings?.electricityRateKwh || 0.6861}/kWh`],
+      ["Capacidad Batería", `${settings?.batteryCapacity || 27.28} kWh`],
+      ["Eficiencia Carga", `${((settings?.chargingEfficiency || 0.9) * 100).toFixed(0)}%`],
       ["Fecha de Exportación", new Date().toISOString()],
     ];
     const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);

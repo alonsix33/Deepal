@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0A0A0A"/>
+      <stop offset="100%" stop-color="#121212"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00D4FF"/>
+      <stop offset="100%" stop-color="#0095FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <!-- Car body centered and larger for maskable -->
+  <path d="M96 290 L140 180 L372 180 L416 290 L440 320 L440 370 L72 370 L72 320 Z" fill="url(#cyan)" opacity="0.9"/>
+  <path d="M172 180 L200 110 L340 110 L368 180" fill="#00D4FF" opacity="0.7"/>
+  <circle cx="130" cy="300" r="16" fill="#00D4FF"/>
+  <circle cx="130" cy="300" r="8" fill="#FFFFFF"/>
+  <circle cx="390" cy="300" r="14" fill="#FF4444"/>
+  <circle cx="170" cy="380" r="36" fill="#1A1A1A" stroke="#00D4FF" stroke-width="4"/>
+  <circle cx="170" cy="380" r="16" fill="#2A2A2A"/>
+  <circle cx="350" cy="380" r="36" fill="#1A1A1A" stroke="#00D4FF" stroke-width="4"/>
+  <circle cx="350" cy="380" r="16" fill="#2A2A2A"/>
+  <path d="M256 150 L220 240 L256 240 L236 350 L290 230 L256 230 Z" fill="#FFD700"/>
+</svg>

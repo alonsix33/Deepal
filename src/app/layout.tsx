@@ -5,7 +5,7 @@ import { StoreProvider } from "@/components/providers/StoreProvider";
 export const metadata: Metadata = {
   title: "Deepal S05 Tracker",
   description:
-    "Track consumption, costs, and maintenance for your Deepal S05 REEV",
+    "Controla consumos, costos y mantenimiento de tu Deepal S05 REEV",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -13,17 +13,22 @@ export const metadata: Metadata = {
     title: "Deepal S05",
   },
   icons: {
-    icon: "/icons/icon.svg",
-    apple: "/icons/icon.svg",
+    icon: "/favicon.svg",
+    apple: "/apple-touch-icon.svg",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "msapplication-tap-highlight": "no",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0A0A0A",
+  themeColor: "#00D4FF",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

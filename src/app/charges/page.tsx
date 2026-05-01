@@ -44,7 +44,7 @@ export default function ChargesPage() {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const totalKwh = charges.reduce((sum, c) => sum + c.kwhCharged, 0);
-  const totalCost = charges.reduce((sum, c) => sum + c.costPEN, 0);
+  const totalCost = charges.reduce((sum, c) => sum + c.totalCost, 0);
   const avgCostPerKwh = totalKwh > 0 ? totalCost / totalKwh : 0;
 
   return (
@@ -135,52 +135,63 @@ export default function ChargesPage() {
             filteredCharges.map((charge) => (
               <GlassCard
                 key={charge.id}
-                className="hover:border-[var(--primary)]/30 transition-all"
+                className="hover:border-[var(--deepal-cyan)]/20 transition-all"
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-lg bg-[var(--deepal-cyan)]/10">
-                      <Zap className="w-5 h-5 text-[var(--deepal-cyan)]" />
+                  <div className="flex items-start gap-3">
+                    <div className="p-2.5 rounded-lg bg-[var(--deepal-cyan)]/10 shrink-0">
+                      <Zap className="w-4 h-4 text-[var(--deepal-cyan)]" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold">{charge.location}</h3>
-                      <div className="flex flex-wrap gap-3 mt-1 text-sm text-[var(--muted-foreground)]">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-sm truncate">{charge.location}</h3>
+                      <div className="flex flex-wrap gap-2 mt-1 text-xs text-[var(--muted-foreground)]">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {formatDate(charge.date)}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Zap className="w-3 h-3" />
                           {CHARGE_TYPES[charge.chargeType]}
                         </span>
+                        {charge.batteryStartPercent != null && charge.batteryEndPercent != null && (
+                          <span className="flex items-center gap-1 text-[var(--deepal-cyan)]">
+                            {charge.batteryStartPercent}% → {charge.batteryEndPercent}%
+                          </span>
+                        )}
                         {charge.durationMinutes && (
                           <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
                             {charge.durationMinutes} min
                           </span>
                         )}
                       </div>
+                      <div className="flex gap-2 mt-1.5">
+                        {charge.isFree && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--deepal-teal)]/10 text-[var(--deepal-teal)]">
+                            Gratis
+                          </span>
+                        )}
+                        {charge.parkingCostPEN > 0 && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--deepal-warning)]/10 text-[var(--deepal-warning)]">
+                            Parking S/ {charge.parkingCostPEN.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
                       {charge.notes && (
-                        <p className="text-sm text-[var(--muted-foreground)] mt-2">
+                        <p className="text-xs text-[var(--muted-foreground)] mt-1 truncate">
                           {charge.notes}
                         </p>
                       )}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-lg">
-                      {formatKwh(charge.kwhCharged)}
-                    </p>
-                    <p className="text-[var(--deepal-cyan)]">
-                      {formatCurrency(charge.costPEN)}
-                    </p>
+                  <div className="text-right shrink-0 ml-3">
+                    <p className="font-bold text-sm">{formatKwh(charge.kwhCharged)}</p>
+                    <p className="text-xs text-[var(--deepal-cyan)]">{formatCurrency(charge.totalCost)}</p>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="mt-2 text-[var(--destructive)] hover:text-[var(--destructive)] hover:bg-[var(--destructive)]/10"
+                      className="mt-1 h-7 w-7 text-[var(--destructive)] hover:text-[var(--destructive)] hover:bg-[var(--destructive)]/10"
                       onClick={() => deleteCharge(charge.id)}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 </div>

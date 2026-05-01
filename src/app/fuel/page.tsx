@@ -6,7 +6,7 @@ import { GlassCard } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useStore } from "@/store/useStore";
-import { formatDate, formatCurrency, formatLiters, formatKm } from "@/lib/utils";
+import { formatDate, formatCurrency, formatKm } from "@/lib/utils";
 import {
   Plus,
   Fuel,
@@ -31,9 +31,9 @@ export default function FuelPage() {
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const totalLiters = fuelUps.reduce((sum, f) => sum + f.liters, 0);
+  const totalGallons = fuelUps.reduce((sum, f) => sum + f.gallons, 0);
   const totalCost = fuelUps.reduce((sum, f) => sum + f.costPEN, 0);
-  const avgCostPerLiter = totalLiters > 0 ? totalCost / totalLiters : 0;
+  const avgCostPerGallon = totalGallons > 0 ? totalCost / totalGallons : 0;
 
   return (
     <AppLayout>
@@ -81,9 +81,9 @@ export default function FuelPage() {
           </GlassCard>
           <GlassCard className="text-center">
             <p className="text-sm text-[var(--muted-foreground)]">
-              Total Litros
-            </p>
-            <p className="text-2xl font-bold">{formatLiters(totalLiters)}</p>
+                Total Galones
+              </p>
+              <p className="text-2xl font-bold">{totalGallons.toFixed(1)} gal</p>
           </GlassCard>
           <GlassCard className="text-center">
             <p className="text-sm text-[var(--muted-foreground)]">
@@ -159,15 +159,9 @@ export default function FuelPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-lg">
-                      {formatLiters(fuelUp.liters)}
-                    </p>
-                    <p className="text-[var(--deepal-warning)]">
-                      {formatCurrency(fuelUp.costPEN)}
-                    </p>
-                    <p className="text-xs text-[var(--muted-foreground)]">
-                      {formatCurrency(fuelUp.costPerLiter)}/L
-                    </p>
+                    <p className="font-bold text-lg">{fuelUp.gallons.toFixed(1)} gal</p>
+                    <p className="text-[var(--deepal-warning)] font-medium">{formatCurrency(fuelUp.costPEN)}</p>
+                    <p className="text-xs text-[var(--muted-foreground)]">{formatCurrency(fuelUp.costPerGallon)}/gal</p>
                     <Button
                       variant="ghost"
                       size="icon"

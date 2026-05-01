@@ -1,12 +1,16 @@
 {
   "name": "Deepal S05 Tracker",
   "short_name": "Deepal S05",
-  "description": "Track consumption, costs, and maintenance for your Deepal S05 REEV",
+  "description": "Controla consumos, costos y mantenimiento de tu Deepal S05 REEV",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0A0A0A",
-  "theme_color": "#0A0A0A",
+  "theme_color": "#00D4FF",
   "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["automotive", "utilities", "lifestyle"],
+  "lang": "es-PE",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/icons/icon.svg",
@@ -15,13 +19,12 @@
       "purpose": "any"
     },
     {
-      "src": "/icons/icon.svg",
+      "src": "/icons/icon-maskable.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "maskable"
     }
   ],
-  "categories": ["automotive", "utilities"],
-  "lang": "es",
-  "dir": "ltr"
+  "screenshots": [],
+  "prefer_related_applications": false
 }

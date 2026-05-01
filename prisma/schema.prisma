@@ -36,14 +36,20 @@ model Charge {
   vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   date          DateTime
-  location      String
+  location      String   // home, jockey_plaza, larcomar, real_plaza, other
   chargeType    String   // AC_7kW, AC_22kW, DC_50kW
+
+  batteryStartPercent Int?   // 0-100
+  batteryEndPercent   Int?   // 0-100
+
+  kwhCharged    Float   // net kWh calculated from battery %
+  kwhRate       Float?  // price per kWh (for DC fast charging)
+  isFree        Boolean @default(false)
+  parkingCostPEN Float  @default(0)
+  totalCost     Float   @default(0)
 
   odometerStart Int?
   odometerEnd   Int?
-
-  kwhCharged    Float
-  costPEN       Float
 
   durationMinutes Int?
   notes         String?
@@ -63,9 +69,9 @@ model FuelUp {
   date          DateTime
   odometer      Int
 
-  liters        Float
+  gallons       Float
   costPEN       Float
-  costPerLiter  Float
+  costPerGallon Float
 
   location      String?
   notes         String?
@@ -146,7 +152,10 @@ model Settings {
   theme                 String   @default("dark")
 
   notificationsEnabled  Boolean  @default(true)
-  electricityRateKwh    Float    @default(0.73)
+  electricityRateKwh    Float    @default(0.6861)
+
+  batteryCapacity       Float    @default(27.28)   // Deepal S05 LFP battery kWh
+  chargingEfficiency    Float    @default(0.90)    // 90% charging efficiency
 
   // Push notification subscription
   pushSubscription      String?  @db.Text

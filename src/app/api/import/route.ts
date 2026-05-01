@@ -45,26 +45,31 @@ export async function POST(request: NextRequest) {
         const sheet = workbook.Sheets["Cargas"];
         const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][];
 
-        // Skip header row
+        // Skip header row. Columns: Fecha, Ubicación, Tipo, Batería Inicial, Batería Final, kWh, Gratis, Estacionamiento, Costo Total, Duración, Odómetro, Notas
         for (let i = 1; i < data.length; i++) {
           const row = data[i];
           if (row && row[0]) {
+            const isFree = String(row[6] || "").toLowerCase() === "sí";
             await prisma.charge.create({
               data: {
                 vehicleId: vehicle.id,
                 date: new Date(row[0] as string),
                 location: String(row[1] || ""),
                 chargeType: String(row[2] || "AC_7kW"),
-                kwhCharged: Number(row[3]) || 0,
-                costPEN: Number(row[4]) || 0,
-                durationMinutes: row[5] ? Number(row[5]) : null,
-                odometerEnd: row[6] ? Number(row[6]) : null,
-                notes: row[7] ? String(row[7]) : null,
+                batteryStartPercent: row[3] ? parseInt(String(row[3]).replace("%", "")) : null,
+                batteryEndPercent: row[4] ? parseInt(String(row[4]).replace("%", "")) : null,
+                kwhCharged: Number(row[5]) || 0,
+                isFree,
+                parkingCostPEN: Number(row[7]) || 0,
+                totalCost: Number(row[8]) || 0,
+                durationMinutes: row[9] ? Number(row[9]) : null,
+                odometerEnd: row[10] ? Number(row[10]) : null,
+                notes: row[11] ? String(row[11]) : null,
               },
             });
           }
         }
-        importedData.charges = data.length - 1;
+        importedData.charges = Math.max(0, data.length - 1);
       }
 
       // Import fuel ups
@@ -80,16 +85,16 @@ export async function POST(request: NextRequest) {
                 vehicleId: vehicle.id,
                 date: new Date(row[0] as string),
                 odometer: Number(row[1]) || 0,
-                liters: Number(row[2]) || 0,
+                gallons: Number(row[2]) || 0,
                 costPEN: Number(row[3]) || 0,
-                costPerLiter: Number(row[4]) || 0,
+                costPerGallon: Number(row[4]) || 0,
                 location: row[5] ? String(row[5]) : null,
                 notes: row[6] ? String(row[6]) : null,
               },
             });
           }
         }
-        importedData.fuelUps = data.length - 1;
+        importedData.fuelUps = Math.max(0, data.length - 1);
       }
 
       // Import services
@@ -129,8 +134,13 @@ export async function POST(request: NextRequest) {
               date: new Date(charge.date),
               location: charge.location,
               chargeType: charge.chargeType,
+              batteryStartPercent: charge.batteryStartPercent,
+              batteryEndPercent: charge.batteryEndPercent,
               kwhCharged: charge.kwhCharged,
-              costPEN: charge.costPEN,
+              kwhRate: charge.kwhRate,
+              isFree: charge.isFree ?? false,
+              parkingCostPEN: charge.parkingCostPEN ?? 0,
+              totalCost: charge.totalCost ?? 0,
               durationMinutes: charge.durationMinutes,
               odometerStart: charge.odometerStart,
               odometerEnd: charge.odometerEnd,
@@ -148,9 +158,9 @@ export async function POST(request: NextRequest) {
               vehicleId: vehicle.id,
               date: new Date(fuelUp.date),
               odometer: fuelUp.odometer,
-              liters: fuelUp.liters,
+              gallons: fuelUp.gallons,
               costPEN: fuelUp.costPEN,
-              costPerLiter: fuelUp.costPerLiter,
+              costPerGallon: fuelUp.costPerGallon,
               location: fuelUp.location,
               notes: fuelUp.notes,
             },

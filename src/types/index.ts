@@ -18,10 +18,15 @@ export interface Charge {
   date: string;
   location: string;
   chargeType: "AC_7kW" | "AC_22kW" | "DC_50kW";
+  batteryStartPercent?: number;
+  batteryEndPercent?: number;
+  kwhCharged: number;
+  kwhRate?: number;
+  isFree: boolean;
+  parkingCostPEN: number;
+  totalCost: number;
   odometerStart?: number;
   odometerEnd?: number;
-  kwhCharged: number;
-  costPEN: number;
   durationMinutes?: number;
   notes?: string;
   createdAt: string;
@@ -33,9 +38,9 @@ export interface FuelUp {
   vehicleId: string;
   date: string;
   odometer: number;
-  liters: number;
+  gallons: number;
   costPEN: number;
-  costPerLiter: number;
+  costPerGallon: number;
   location?: string;
   notes?: string;
   createdAt: string;
@@ -78,6 +83,8 @@ export interface Settings {
   theme: "dark" | "light";
   notificationsEnabled: boolean;
   electricityRateKwh: number;
+  batteryCapacity: number;
+  chargingEfficiency: number;
 }
 
 export interface DashboardStats {

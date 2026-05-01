@@ -1,53 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0A0A0A"/>
-      <stop offset="100%" style="stop-color:#1A1A1A"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0A0A0A"/>
+      <stop offset="100%" stop-color="#121212"/>
     </linearGradient>
-    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#00D4FF"/>
-      <stop offset="100%" style="stop-color:#0095FF"/>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00D4FF"/>
+      <stop offset="100%" stop-color="#0095FF"/>
     </linearGradient>
   </defs>
-
-  <!-- Background -->
   <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-
-  <!-- Car body outline -->
-  <path d="M100 320 L130 260 L180 220 L332 220 L382 260 L412 320 L412 360 L100 360 Z"
-        fill="none"
-        stroke="url(#glow)"
-        stroke-width="8"
-        stroke-linejoin="round"/>
-
-  <!-- Car roof -->
-  <path d="M180 220 L200 180 L312 180 L332 220"
-        fill="none"
-        stroke="url(#glow)"
-        stroke-width="8"
-        stroke-linejoin="round"/>
-
-  <!-- Front headlight -->
-  <circle cx="140" cy="300" r="12" fill="#00D4FF"/>
-
-  <!-- Rear light -->
-  <circle cx="372" cy="300" r="12" fill="#00D4FF"/>
-
-  <!-- Lightning bolt (EV symbol) -->
-  <path d="M256 120 L230 200 L260 200 L240 280 L290 180 L260 180 L280 120 Z"
-        fill="#00D4FF"/>
-
+  <rect x="48" y="48" width="416" height="416" rx="80" fill="none" stroke="url(#cyan)" stroke-width="4"/>
+  <!-- Car body -->
+  <path d="M128 280 L160 200 L352 200 L384 280 L400 300 L400 340 L112 340 L112 300 Z" fill="url(#cyan)" opacity="0.9"/>
+  <!-- Car roof/cabin -->
+  <path d="M180 200 L200 150 L340 150 L360 200" fill="#00D4FF" opacity="0.7"/>
+  <!-- Headlights -->
+  <circle cx="150" cy="290" r="12" fill="#00D4FF"/>
+  <circle cx="150" cy="290" r="6" fill="#FFFFFF"/>
+  <!-- Taillights -->
+  <circle cx="370" cy="290" r="10" fill="#FF4444"/>
   <!-- Wheels -->
-  <circle cx="170" cy="360" r="35" fill="none" stroke="#00D4FF" stroke-width="6"/>
-  <circle cx="170" cy="360" r="18" fill="#00D4FF" opacity="0.5"/>
-  <circle cx="342" cy="360" r="35" fill="none" stroke="#00D4FF" stroke-width="6"/>
-  <circle cx="342" cy="360" r="18" fill="#00D4FF" opacity="0.5"/>
-
-  <!-- Text -->
-  <text x="256" y="450"
-        font-family="Arial, sans-serif"
-        font-size="48"
-        font-weight="bold"
-        fill="#FFFFFF"
-        text-anchor="middle">S05</text>
+  <circle cx="180" cy="350" r="28" fill="#1A1A1A" stroke="#00D4FF" stroke-width="3"/>
+  <circle cx="180" cy="350" r="12" fill="#2A2A2A"/>
+  <circle cx="340" cy="350" r="28" fill="#1A1A1A" stroke="#00D4FF" stroke-width="3"/>
+  <circle cx="340" cy="350" r="12" fill="#2A2A2A"/>
+  <!-- Lightning bolt -->
+  <path d="M260 180 L230 260 L260 260 L245 340 L290 250 L260 250 Z" fill="#FFD700"/>
 </svg>

@@ -21,28 +21,28 @@ export default function NewFuelPage() {
     date: new Date().toISOString().split("T")[0],
     time: new Date().toTimeString().slice(0, 5),
     odometer: vehicle.currentOdometer.toString(),
-    liters: "",
+    gallons: "",
     costPEN: "",
-    costPerLiter: "",
+    costPerGallon: "",
     location: "",
     notes: "",
   });
 
-  const handleLitersChange = (value: string) => {
+  const handleGallonsChange = (value: string) => {
     setFormData((prev) => {
-      const liters = parseFloat(value) || 0;
+      const gallons = parseFloat(value) || 0;
       const costPEN = parseFloat(prev.costPEN) || 0;
-      const costPerLiter = liters > 0 ? (costPEN / liters).toFixed(2) : "";
-      return { ...prev, liters: value, costPerLiter };
+      const costPerGallon = gallons > 0 ? (costPEN / gallons).toFixed(2) : "";
+      return { ...prev, gallons: value, costPerGallon };
     });
   };
 
   const handleCostChange = (value: string) => {
     setFormData((prev) => {
-      const liters = parseFloat(prev.liters) || 0;
+      const gallons = parseFloat(prev.gallons) || 0;
       const costPEN = parseFloat(value) || 0;
-      const costPerLiter = liters > 0 ? (costPEN / liters).toFixed(2) : "";
-      return { ...prev, costPEN: value, costPerLiter };
+      const costPerGallon = gallons > 0 ? (costPEN / gallons).toFixed(2) : "";
+      return { ...prev, costPEN: value, costPerGallon };
     });
   };
 
@@ -55,9 +55,9 @@ export default function NewFuelPage() {
       await addFuelUpAsync({
         date: `${formData.date}T${formData.time}:00`,
         odometer: parseInt(formData.odometer) || 0,
-        liters: parseFloat(formData.liters) || 0,
+        gallons: parseFloat(formData.gallons) || 0,
         costPEN: parseFloat(formData.costPEN) || 0,
-        costPerLiter: parseFloat(formData.costPerLiter) || 0,
+        costPerGallon: parseFloat(formData.costPerGallon) || 0,
         location: formData.location || undefined,
         notes: formData.notes || undefined,
       });
@@ -172,15 +172,15 @@ export default function NewFuelPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="liters">Litros</Label>
+                <Label htmlFor="gallons">Galones</Label>
                 <Input
-                  id="liters"
+                  id="gallons"
                   type="number"
                   step="0.01"
                   min="0"
-                  max="51"
-                  value={formData.liters}
-                  onChange={(e) => handleLitersChange(e.target.value)}
+                  max="15"
+                  value={formData.gallons}
+                  onChange={(e) => handleGallonsChange(e.target.value)}
                   required
                   disabled={isSubmitting}
                 />
@@ -199,12 +199,12 @@ export default function NewFuelPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="costPerLiter">Precio/Litro (S/)</Label>
+                <Label htmlFor="costPerGallon">Precio/Galón (S/)</Label>
                 <Input
-                  id="costPerLiter"
+                  id="costPerGallon"
                   type="number"
                   step="0.01"
-                  value={formData.costPerLiter}
+                  value={formData.costPerGallon}
                   readOnly
                   className="bg-[var(--muted)]"
                 />

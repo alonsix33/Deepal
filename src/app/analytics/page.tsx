@@ -56,7 +56,7 @@ export default function AnalyticsPage() {
       if (!months[month]) {
         months[month] = { month, electric: 0, fuel: 0, maintenance: 0 };
       }
-      months[month].electric += charge.costPEN;
+      months[month].electric += charge.totalCost;
     });
 
     fuelUps.forEach((fuelUp) => {
@@ -90,7 +90,7 @@ export default function AnalyticsPage() {
 
   // Usage distribution data
   const usageData = useMemo(() => {
-    const totalElectric = charges.reduce((sum, c) => sum + c.costPEN, 0);
+    const totalElectric = charges.reduce((sum, c) => sum + c.totalCost, 0);
     const totalFuel = fuelUps.reduce((sum, f) => sum + f.costPEN, 0);
 
     if (totalElectric === 0 && totalFuel === 0) {
