@@ -87,7 +87,7 @@ export default function HomePage() {
               Changan
             </div>
             <div className="mt-1 flex items-end gap-3">
-              <h1 className="text-[44px] font-bold tracking-[-0.03em] leading-[0.9] text-[var(--text-primary)]">
+              <h1 className="text-[44px] font-bold tracking-[-0.03em] leading-[0.85] text-[var(--text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
                 DEEPAL
               </h1>
               <span className="px-2.5 py-1 rounded-md bg-[var(--card-border)] text-sm font-semibold text-[var(--deepal-cyan)] tracking-wider mb-1">

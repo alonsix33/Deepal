@@ -47,6 +47,7 @@
 
 @theme inline {
   --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
+  --font-display: "Playfair Display Variable", "Playfair Display", Georgia, serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
 
   --color-black: var(--black);
