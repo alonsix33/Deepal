@@ -83,20 +83,22 @@ export default function HomePage() {
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-[var(--deepal-blue)]/5 rounded-full blur-2xl" />
 
           <div className="relative">
-            <div className="text-[10px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.2em] mb-2">
-              Changan · Deepal
+            <div className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.25em]">
+              Changan
             </div>
-            <h1 className="text-4xl font-black tracking-tight leading-none">
-              <span className="text-[var(--text-primary)]">Deepal</span>{" "}
-              <span className="bg-gradient-to-r from-[var(--deepal-cyan)] to-[var(--deepal-blue)] bg-clip-text text-transparent">
+            <div className="mt-1 flex items-end gap-3">
+              <h1 className="text-[44px] font-bold tracking-[-0.03em] leading-[0.9] text-[var(--text-primary)]">
+                DEEPAL
+              </h1>
+              <span className="px-2.5 py-1 rounded-md bg-[var(--card-border)] text-sm font-semibold text-[var(--deepal-cyan)] tracking-wider mb-1">
                 S05
               </span>
-            </h1>
-            <div className="flex items-center gap-3 mt-3">
+            </div>
+            <div className="flex items-center gap-3 mt-4">
               <span className="text-xs font-medium text-[var(--text-secondary)]">
                 REEV · 27.28 kWh
               </span>
-              <span className="w-1 h-1 rounded-full bg-[var(--text-tertiary)]" />
+              <span className="w-px h-3 bg-[var(--text-tertiary)]/50" />
               <span className="text-xs text-[var(--text-tertiary)]">
                 {formatKm(stats.totalKmDriven)}
               </span>
