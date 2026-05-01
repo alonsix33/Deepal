@@ -8,6 +8,7 @@
     "db:push": "prisma db push",
     "deploy": "prisma generate && prisma db push && next build",
     "start": "next start",
+    "start:railway": "prisma db push && next start",
     "lint": "eslint",
     "postinstall": "prisma generate"
   },

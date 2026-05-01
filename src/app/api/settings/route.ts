@@ -14,9 +14,23 @@ export async function GET() {
           language: "es",
           theme: "dark",
           notificationsEnabled: true,
-          electricityRateKwh: 0.73,
+          electricityRateKwh: 0.6861,
+          batteryCapacity: 27.28,
+          chargingEfficiency: 0.9,
         },
       });
+    } else {
+      // Migrate old defaults
+      const updates: Record<string, unknown> = {};
+      if (settings.electricityRateKwh === 0.73) updates.electricityRateKwh = 0.6861;
+      if (settings.batteryCapacity == null) updates.batteryCapacity = 27.28;
+      if (settings.chargingEfficiency == null) updates.chargingEfficiency = 0.9;
+      if (Object.keys(updates).length > 0) {
+        settings = await prisma.settings.update({
+          where: { id: settings.id },
+          data: updates,
+        });
+      }
     }
 
     return NextResponse.json(settings);
