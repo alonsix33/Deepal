@@ -193,7 +193,7 @@ export default function NewFuelPage() {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3">
               <div className="space-y-1.5">
                 <label
                   className="text-xs font-medium"
@@ -227,8 +227,9 @@ export default function NewFuelPage() {
                   Odómetro (km)
                 </label>
                 <input
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={formData.odometer}
                   onChange={(e) =>
                     setFormData((prev) => ({
