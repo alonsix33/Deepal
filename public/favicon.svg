@@ -1,9 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="12" fill="#0A0A0A"/>
-  <rect x="6" y="6" width="52" height="52" rx="10" fill="none" stroke="#00D4FF" stroke-width="1.5"/>
-  <path d="M16 38 L20 28 L44 28 L48 38 L52 42 L52 48 L12 48 L12 42 Z" fill="#00D4FF" opacity="0.9"/>
-  <path d="M24 28 L28 20 L40 20 L44 28" fill="#00D4FF" opacity="0.7"/>
-  <circle cx="22" cy="40" r="5" fill="#1A1A1A" stroke="#00D4FF" stroke-width="1"/>
-  <circle cx="42" cy="40" r="5" fill="#1A1A1A" stroke="#00D4FF" stroke-width="1"/>
-  <path d="M32 16 L29 28 L32 28 L30 38 L35 26 L32 26 Z" fill="#FFD700"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1976D2"/>
+      <stop offset="100%" stop-color="#0D47A1"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square, matches icon proportions at 64px -->
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- Bolt scaled to 64px canvas — same proportions, bold enough to read at 16px -->
+  <path d="M38.5 10.5 L23 34.5 H31.5 L21 53 L42 29 H33.5 Z" fill="white"/>
 </svg>

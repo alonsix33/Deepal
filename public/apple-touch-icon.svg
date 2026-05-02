@@ -1,9 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none">
-  <rect width="180" height="180" rx="36" fill="#0A0A0A"/>
-  <rect x="16" y="16" width="148" height="148" rx="28" fill="none" stroke="#00D4FF" stroke-width="3"/>
-  <path d="M45 100 L55 70 L125 70 L135 100 L145 115 L145 140 L35 140 L35 115 Z" fill="#00D4FF" opacity="0.9"/>
-  <path d="M65 70 L75 42 L115 42 L125 70" fill="#00D4FF" opacity="0.7"/>
-  <circle cx="60" cy="108" r="14" fill="#1A1A1A" stroke="#00D4FF" stroke-width="2"/>
-  <circle cx="122" cy="108" r="14" fill="#1A1A1A" stroke="#00D4FF" stroke-width="2"/>
-  <path d="M90 34 L82 74 L90 74 L86 110 L98 68 L90 68 Z" fill="#FFD700"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="180" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1976D2"/>
+      <stop offset="100%" stop-color="#0D47A1"/>
+    </linearGradient>
+    <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- iOS clips to its own rounded rect shape; rx here is just a visual fallback -->
+  <rect width="180" height="180" rx="40" fill="url(#bg)"/>
+  <!-- Bolt scaled to 180px, same proportions as main icon -->
+  <path d="M108 30 L65 98 H89 L59 150 L118 82 H94 Z" fill="white" opacity="0.97" filter="url(#glow)"/>
 </svg>

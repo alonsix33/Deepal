@@ -119,7 +119,7 @@ export default function NewChargePage() {
     <AppLayout>
       <div className="max-w-2xl mx-auto space-y-6 pb-8">
         {/* Header */}
-        <div className="flex items-center gap-4 sticky top-0 z-10 bg-[var(--black)]/80 backdrop-blur-lg py-4 -mx-4 px-4">
+        <div className="flex items-center gap-4 sticky-below-header bg-[var(--md-surface)]/90 backdrop-blur-lg py-3 -mx-4 px-4 border-b border-[var(--md-outline-variant)]">
           <Link href="/charges">
             <Button variant="ghost" size="icon">
               <ArrowLeft className="w-5 h-5" />
@@ -538,7 +538,7 @@ export default function NewChargePage() {
           </GlassCard>
 
           {/* Submit */}
-          <div className="flex gap-3 sticky bottom-0 pb-4 pt-2 bg-[var(--black)]/80 backdrop-blur-lg -mx-4 px-4">
+          <div className="flex gap-3 sticky bottom-0 pb-4 pt-2 bg-[var(--md-surface)]/90 backdrop-blur-lg -mx-4 px-4 border-t border-[var(--md-outline-variant)]">
             <Link href="/charges" className="flex-1">
               <Button variant="outline" className="w-full" disabled={isSubmitting}>
                 Cancelar

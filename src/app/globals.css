@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* ─── Custom fonts ─── */
+@font-face {
+  font-family: "NOS";
+  src: url("/fonts/NOS.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ─── MD3 Color System ─── */
 /* Light mode (default) — seed: #0057CC Deepal Tech Blue */
 :root {
@@ -542,6 +551,22 @@ input[type="range"]::-webkit-slider-thumb {
 .stagger-8 { animation-delay: 0.4s; }
 
 /* ─── Safe areas ─── */
-.safe-top { padding-top: env(safe-area-inset-top, 0px); }
-.safe-left { padding-left: env(safe-area-inset-left, 0px); }
+.safe-left  { padding-left:  env(safe-area-inset-left,  0px); }
 .safe-right { padding-right: env(safe-area-inset-right, 0px); }
+
+/* Header offset — always header height (3.5rem) + safe-area notch */
+:root {
+  --header-h: calc(3.5rem + env(safe-area-inset-top, 0px));
+}
+
+/* Content area: starts exactly below the fixed header */
+.content-offset {
+  padding-top: calc(var(--header-h) + 0.5rem); /* +0.5rem breathing room */
+}
+
+/* Sticky elements inside pages that need to clear the fixed header */
+.sticky-below-header {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 30;
+}

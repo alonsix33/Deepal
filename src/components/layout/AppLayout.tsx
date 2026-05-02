@@ -22,7 +22,7 @@ export function AppLayout({ children, hideNav }: AppLayoutProps) {
     >
       <Header />
       <main className="min-h-screen">
-        <div className="max-w-lg mx-auto px-4 pt-18 pb-28 safe-top">
+        <div className="max-w-lg mx-auto px-4 pb-28 content-offset">
           {children}
         </div>
       </main>
