@@ -106,28 +106,17 @@ export default function HomePage() {
             </p>
 
             {/* Brand name — Space Grotesk Display */}
-            <div className="mt-2 flex items-end gap-3 leading-none">
+            <div className="mt-2 leading-none">
               <h1
                 className="type-display-lg"
                 style={{
                   fontFamily: "'NOS', 'Space Grotesk', system-ui, sans-serif",
-                  color: "var(--md-on-primary-container)",
                   letterSpacing: "0.04em",
                 }}
               >
-                DEEPAL
+                <span style={{ color: "var(--md-on-primary-container)" }}>DEEPAL </span>
+                <span style={{ color: "var(--md-primary)" }}>S05</span>
               </h1>
-              <span
-                className="mb-1 px-3 py-1 rounded-[var(--shape-sm)] type-title-lg"
-                style={{
-                  background: "var(--md-primary)",
-                  color: "var(--md-on-primary)",
-                  fontFamily: "'NOS', 'Space Grotesk', system-ui, sans-serif",
-                  letterSpacing: "0.06em",
-                }}
-              >
-                S05
-              </span>
             </div>
 
             {/* Tagline */}
