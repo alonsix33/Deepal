@@ -3,20 +3,9 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { GlassCard } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useStore } from "@/store/useStore";
 import { SERVICE_TYPES } from "@/types";
-import { ArrowLeft, Wrench, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Wrench, Save, Loader2, MapPin, FileText, Gauge } from "lucide-react";
 import Link from "next/link";
 
 export default function NewMaintenancePage() {
@@ -31,7 +20,7 @@ export default function NewMaintenancePage() {
     serviceType: "",
     customServiceType: "",
     costPEN: "",
-    provider: "Derco Center Surco",
+    provider: "",
     notes: "",
   });
 
@@ -58,49 +47,104 @@ export default function NewMaintenancePage() {
       router.push("/maintenance");
     } catch (err) {
       console.error("Error saving service:", err);
-      setSubmitError(err instanceof Error ? err.message : "Error al guardar el servicio");
+      setSubmitError(
+        err instanceof Error ? err.message : "Error al guardar el servicio"
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const inputBase: React.CSSProperties = {
+    width: "100%",
+    height: "3.5rem",
+    padding: "0 1rem",
+    borderRadius: "var(--shape-sm)",
+    border: "1.5px solid var(--md-outline-variant)",
+    background: "transparent",
+    color: "var(--md-on-surface)",
+    fontSize: "1rem",
+    outline: "none",
+    transition: "border-color 0.2s",
+    boxSizing: "border-box",
+  };
+
+  const focusHandlers = {
+    onFocus: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+      (e.currentTarget.style.borderColor = "var(--md-primary)"),
+    onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+      (e.currentTarget.style.borderColor = "var(--md-outline-variant)"),
+  };
+
+  const sectionCard = "rounded-[var(--shape-xl)] p-5 space-y-4";
+  const sectionBg = { background: "var(--md-surface-container)" };
+
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
+      <div className="max-w-lg mx-auto space-y-4 pb-6">
+        {/* Sticky sub-header */}
+        <div
+          className="sticky-below-header flex items-center gap-3 py-3"
+          style={{ background: "var(--md-surface)" }}
+        >
           <Link href="/maintenance">
-            <Button variant="ghost" size="icon">
+            <button
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95"
+              style={{
+                background: "var(--md-surface-container)",
+                color: "var(--md-on-surface)",
+              }}
+            >
               <ArrowLeft className="w-5 h-5" />
-            </Button>
+            </button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">Nuevo Servicio</h1>
-            <p className="text-[var(--muted-foreground)]">
+            <h1
+              className="text-lg font-semibold"
+              style={{ color: "var(--md-on-surface)" }}
+            >
+              Nuevo Servicio
+            </h1>
+            <p className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
               Registra un servicio de mantenimiento
             </p>
           </div>
         </div>
 
-        {/* Error Message */}
+        {/* Error */}
         {(submitError || error) && (
-          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+          <div
+            className="p-4 rounded-[var(--shape-md)] text-sm"
+            style={{
+              background: "var(--md-error-container, #FFDAD6)",
+              color: "var(--md-on-error-container, #410002)",
+            }}
+          >
             {submitError || error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Date */}
-          <GlassCard>
-            <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <Wrench className="w-4 h-4 text-[var(--deepal-blue)]" />
-              Fecha del Servicio
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">Fecha</Label>
-                <Input
-                  id="date"
+        <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Date + Odometer */}
+          <div className={sectionCard} style={sectionBg}>
+            <div className="flex items-center gap-2 mb-1">
+              <Gauge className="w-4 h-4" style={{ color: "var(--md-primary)" }} />
+              <span
+                className="text-xs font-semibold tracking-wide uppercase"
+                style={{ color: "var(--md-on-surface-variant)" }}
+              >
+                Fecha y Odómetro
+              </span>
+            </div>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label
+                  className="text-xs font-medium"
+                  style={{ color: "var(--md-on-surface-variant)" }}
+                >
+                  Fecha
+                </label>
+                <input
                   type="date"
                   value={formData.date}
                   onChange={(e) =>
@@ -108,14 +152,21 @@ export default function NewMaintenancePage() {
                   }
                   required
                   disabled={isSubmitting}
+                  style={inputBase}
+                  {...focusHandlers}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="odometer">Odómetro (km)</Label>
-                <Input
-                  id="odometer"
-                  type="number"
-                  min="0"
+              <div className="space-y-1.5">
+                <label
+                  className="text-xs font-medium"
+                  style={{ color: "var(--md-on-surface-variant)" }}
+                >
+                  Odómetro (km)
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={formData.odometer}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -125,36 +176,64 @@ export default function NewMaintenancePage() {
                   }
                   required
                   disabled={isSubmitting}
+                  style={inputBase}
+                  {...focusHandlers}
                 />
               </div>
             </div>
-          </GlassCard>
+          </div>
 
           {/* Service Type */}
-          <GlassCard>
-            <h3 className="font-semibold mb-4">Tipo de Servicio</h3>
-            <div className="space-y-4">
-              <Select
-                value={formData.serviceType}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, serviceType: value }))
-                }
-                disabled={isSubmitting}
+          <div className={sectionCard} style={sectionBg}>
+            <div className="flex items-center gap-2 mb-1">
+              <Wrench className="w-4 h-4" style={{ color: "var(--color-service, #6750A4)" }} />
+              <span
+                className="text-xs font-semibold tracking-wide uppercase"
+                style={{ color: "var(--md-on-surface-variant)" }}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona el tipo de servicio" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SERVICE_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {formData.serviceType === "Otro" && (
-                <Input
-                  placeholder="Describe el servicio"
+                Tipo de Servicio
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <label
+                className="text-xs font-medium"
+                style={{ color: "var(--md-on-surface-variant)" }}
+              >
+                Servicio
+              </label>
+              <select
+                value={formData.serviceType}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, serviceType: e.target.value }))
+                }
+                required
+                disabled={isSubmitting}
+                style={{ ...inputBase, paddingRight: "2.5rem", appearance: "none" }}
+                {...focusHandlers}
+              >
+                <option value="" disabled style={{ color: "var(--md-on-surface-variant)" }}>
+                  Selecciona el tipo de servicio
+                </option>
+                {SERVICE_TYPES.map((type) => (
+                  <option key={type} value={type} style={{ color: "var(--md-on-surface)", background: "var(--md-surface-container)" }}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {formData.serviceType === "Otro" && (
+              <div className="space-y-1.5">
+                <label
+                  className="text-xs font-medium"
+                  style={{ color: "var(--md-on-surface-variant)" }}
+                >
+                  Describe el servicio
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej: Cambio de filtro de cabina"
                   value={formData.customServiceType}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -164,73 +243,130 @@ export default function NewMaintenancePage() {
                   }
                   required
                   disabled={isSubmitting}
+                  style={inputBase}
+                  {...focusHandlers}
                 />
-              )}
-            </div>
-          </GlassCard>
+              </div>
+            )}
+          </div>
 
-          {/* Cost and Provider */}
-          <GlassCard>
-            <h3 className="font-semibold mb-4">Detalles</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="costPEN">Costo (S/)</Label>
-                <Input
-                  id="costPEN"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.costPEN}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, costPEN: e.target.value }))
-                  }
-                  required
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="provider">Proveedor</Label>
-                <Input
-                  id="provider"
-                  value={formData.provider}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      provider: e.target.value,
-                    }))
-                  }
-                  placeholder="Ej: Derco Center"
-                  disabled={isSubmitting}
-                />
-              </div>
+          {/* Cost */}
+          <div className={sectionCard} style={sectionBg}>
+            <div className="flex items-center gap-2 mb-1">
+              <span
+                className="text-xs font-semibold tracking-wide uppercase"
+                style={{ color: "var(--md-on-surface-variant)" }}
+              >
+                Costo
+              </span>
             </div>
-          </GlassCard>
+            <div className="space-y-1.5">
+              <label
+                className="text-xs font-medium"
+                style={{ color: "var(--md-on-surface-variant)" }}
+              >
+                Total (S/)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                value={formData.costPEN}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, costPEN: e.target.value }))
+                }
+                required
+                disabled={isSubmitting}
+                style={inputBase}
+                {...focusHandlers}
+              />
+            </div>
+          </div>
+
+          {/* Provider */}
+          <div className={sectionCard} style={sectionBg}>
+            <div className="flex items-center gap-2 mb-1">
+              <MapPin className="w-4 h-4" style={{ color: "var(--md-secondary)" }} />
+              <span
+                className="text-xs font-semibold tracking-wide uppercase"
+                style={{ color: "var(--md-on-surface-variant)" }}
+              >
+                Taller / Proveedor
+              </span>
+            </div>
+            <div className="space-y-1.5">
+              <label
+                className="text-xs font-medium"
+                style={{ color: "var(--md-on-surface-variant)" }}
+              >
+                Nombre (opcional)
+              </label>
+              <input
+                type="text"
+                placeholder="Ej: Derco Center Surco"
+                value={formData.provider}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    provider: e.target.value,
+                  }))
+                }
+                disabled={isSubmitting}
+                style={inputBase}
+                {...focusHandlers}
+              />
+            </div>
+          </div>
 
           {/* Notes */}
-          <GlassCard>
-            <h3 className="font-semibold mb-4">Notas</h3>
-            <Input
+          <div className={sectionCard} style={sectionBg}>
+            <div className="flex items-center gap-2 mb-1">
+              <FileText className="w-4 h-4" style={{ color: "var(--md-secondary)" }} />
+              <span
+                className="text-xs font-semibold tracking-wide uppercase"
+                style={{ color: "var(--md-on-surface-variant)" }}
+              >
+                Notas
+              </span>
+            </div>
+            <input
+              type="text"
               placeholder="Notas adicionales (opcional)"
               value={formData.notes}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, notes: e.target.value }))
               }
               disabled={isSubmitting}
+              style={inputBase}
+              {...focusHandlers}
             />
-          </GlassCard>
+          </div>
 
           {/* Submit */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 pt-1">
             <Link href="/maintenance" className="flex-1">
-              <Button variant="outline" className="w-full" disabled={isSubmitting}>
+              <button
+                type="button"
+                disabled={isSubmitting}
+                className="w-full h-12 rounded-full text-sm font-semibold border transition-all active:scale-95"
+                style={{
+                  borderColor: "var(--md-outline)",
+                  color: "var(--md-on-surface)",
+                  background: "transparent",
+                }}
+              >
                 Cancelar
-              </Button>
+              </button>
             </Link>
-            <Button
+            <button
               type="submit"
-              variant="cyan"
-              className="flex-1 gap-2"
-              disabled={isSubmitting || isLoading}
+              disabled={isSubmitting || isLoading || !formData.serviceType}
+              className="flex-1 h-12 rounded-full text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60"
+              style={{
+                background: "var(--md-primary)",
+                color: "var(--md-on-primary)",
+              }}
             >
               {isSubmitting ? (
                 <>
@@ -243,7 +379,7 @@ export default function NewMaintenancePage() {
                   Guardar Servicio
                 </>
               )}
-            </Button>
+            </button>
           </div>
         </form>
       </div>

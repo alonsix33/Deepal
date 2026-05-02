@@ -682,14 +682,13 @@ export const useStore = create<AppState>()(
         const averageCostPerKm =
           totalKmDriven > 0 ? totalEnergyCost / totalKmDriven : 0;
 
-        // Next service calculation (1st at 5,000 km, then every 10,000 km)
-        const lastService = state.services
-          .filter((s) => s.serviceType.toLowerCase().includes("servicio"))
-          .sort((a, b) => b.odometer - a.odometer)[0];
-        const lastServiceKm = lastService?.odometer || 0;
-        const nextServiceKm = lastService
-          ? lastServiceKm + 10000 - state.vehicle.currentOdometer
-          : 5000 - state.vehicle.currentOdometer;
+        // Next service: Option B schedule — 5k, 10k, 20k, 30k, 40k ...
+        const current = state.vehicle.currentOdometer;
+        let nextMilestone: number;
+        if (current < 5_000) nextMilestone = 5_000;
+        else if (current < 10_000) nextMilestone = 10_000;
+        else nextMilestone = Math.ceil((current + 1) / 10_000) * 10_000;
+        const nextServiceKm = Math.max(0, nextMilestone - current);
 
         return {
           totalKmDriven,
@@ -698,7 +697,7 @@ export const useStore = create<AppState>()(
           totalMaintenanceCost,
           electricUsagePercent,
           averageCostPerKm,
-          nextServiceKm: Math.max(0, nextServiceKm),
+          nextServiceKm,
         };
       },
     }),

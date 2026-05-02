@@ -120,9 +120,10 @@ export const CHARGE_TYPES: Record<Charge["chargeType"], string> = {
 
 export const SERVICE_TYPES = [
   "Primer servicio (5,000 km)",
-  "Segundo servicio (15,000 km)",
-  "Tercer servicio (25,000 km)",
-  "Servicio mayor (40,000 km)",
+  "Segundo servicio (10,000 km)",
+  "Tercer servicio (20,000 km)",
+  "Cuarto servicio (30,000 km)",
+  "Quinto servicio (40,000 km)",
   "Cambio de aceite",
   "Rotación de llantas",
   "Frenos",
