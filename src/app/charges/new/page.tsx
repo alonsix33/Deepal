@@ -46,13 +46,13 @@ export default function NewChargePage() {
   const kwhNet  = endPercent > startPercent ? ((endPercent - startPercent) / 100) * batteryCapacity : 0;
   const kwhGrid = kwhNet / efficiency;
 
-  const isMall = formData.location !== "home" && formData.location !== "other";
+  const isHome = formData.location === "home";
   const isDC   = formData.chargeType === "DC_50kW";
 
   const electricityCost = isDC
     ? kwhGrid * (parseFloat(formData.kwhRate) || rateKwh)
     : kwhGrid * rateKwh;
-  const parkingCost = parseFloat(formData.parkingCostPEN) || 0;
+  const parkingCost = isHome ? 0 : (parseFloat(formData.parkingCostPEN) || 0);
   const totalCost   = formData.isFree ? parkingCost : electricityCost + parkingCost;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -222,10 +222,17 @@ export default function NewChargePage() {
                   setFormData((prev) => ({
                     ...prev,
                     batteryStartPercent: v,
-                    batteryEndPercent: Math.max(parseInt(v), parseInt(prev.batteryEndPercent)).toString(),
+                    batteryEndPercent: Math.max(parseInt(v) || 0, parseInt(prev.batteryEndPercent) || 0).toString(),
                   }))
                 }
-                onInputChange={(v) => setFormData((prev) => ({ ...prev, batteryStartPercent: v }))}
+                onInputChange={(v) => {
+                  const n = Math.min(100, Math.max(0, parseInt(v) || 0));
+                  setFormData((prev) => ({
+                    ...prev,
+                    batteryStartPercent: n.toString(),
+                    batteryEndPercent: Math.max(n, parseInt(prev.batteryEndPercent) || 0).toString(),
+                  }));
+                }}
               />
               <SliderRow
                 label="% Fin"
@@ -233,7 +240,10 @@ export default function NewChargePage() {
                 min={startPercent}
                 max={100}
                 onChange={(v) => setFormData((prev) => ({ ...prev, batteryEndPercent: v }))}
-                onInputChange={(v) => setFormData((prev) => ({ ...prev, batteryEndPercent: v }))}
+                onInputChange={(v) => {
+                  const n = Math.min(100, Math.max(startPercent, parseInt(v) || 0));
+                  setFormData((prev) => ({ ...prev, batteryEndPercent: n.toString() }));
+                }}
               />
             </div>
           </GlassCard>
@@ -297,13 +307,17 @@ export default function NewChargePage() {
             </div>
             <RadioGroup
               value={formData.location}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, location: value }))}
+              onValueChange={(value) => setFormData((prev) => ({
+                ...prev,
+                location: value,
+                isFree: value === "home" ? false : prev.isFree,
+                parkingCostPEN: value === "home" ? "0" : prev.parkingCostPEN,
+              }))}
               className="grid grid-cols-2 gap-2"
               disabled={isSubmitting}
             >
               {Object.entries(CHARGE_LOCATIONS).map(([key, label]) => {
                 const isSelected = formData.location === key;
-                const isFreeLocation = key !== "home" && key !== "other";
                 return (
                   <div
                     key={key}
@@ -321,14 +335,6 @@ export default function NewChargePage() {
                       >
                         {label}
                       </span>
-                      {isFreeLocation && (
-                        <span
-                          className="text-[10px] font-semibold mt-0.5 block"
-                          style={{ color: "var(--md-on-primary-container)", opacity: isSelected ? 0.8 : 0.6 }}
-                        >
-                          Gratis
-                        </span>
-                      )}
                     </Label>
                   </div>
                 );
@@ -394,10 +400,13 @@ export default function NewChargePage() {
               </h3>
             </div>
             <div className="space-y-3">
-              {isMall && (
+              {!isHome && (
                 <label
-                  className="flex items-center gap-3 p-3 rounded-[var(--shape-md)] border cursor-pointer"
-                  style={{ borderColor: "var(--md-outline-variant)" }}
+                  className="flex items-center gap-3 p-3 rounded-[var(--shape-md)] border cursor-pointer transition-all"
+                  style={{
+                    borderColor: formData.isFree ? "var(--md-primary)" : "var(--md-outline-variant)",
+                    background: formData.isFree ? "var(--md-primary-container)" : "transparent",
+                  }}
                 >
                   <input
                     type="checkbox"
@@ -407,16 +416,22 @@ export default function NewChargePage() {
                     disabled={isSubmitting}
                   />
                   <div>
-                    <span className="text-sm font-medium" style={{ color: "var(--md-on-surface)" }}>
+                    <span
+                      className="text-sm font-medium"
+                      style={{ color: formData.isFree ? "var(--md-on-primary-container)" : "var(--md-on-surface)" }}
+                    >
                       Carga gratis
                     </span>
-                    <p className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
-                      La carga es gratuita en este local
+                    <p
+                      className="text-xs"
+                      style={{ color: formData.isFree ? "var(--md-on-primary-container)" : "var(--md-on-surface-variant)", opacity: 0.75 }}
+                    >
+                      Solo se contabiliza el estacionamiento
                     </p>
                   </div>
                 </label>
               )}
-              {isDC && (
+              {isDC && !formData.isFree && (
                 <div className="space-y-1.5">
                   <Label className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
                     Precio por kWh (S/)
@@ -429,21 +444,28 @@ export default function NewChargePage() {
                   />
                 </div>
               )}
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-1.5">
-                  <ParkingCircle className="w-3.5 h-3.5" style={{ color: "var(--md-on-surface-variant)" }} />
-                  <Label className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
-                    Estacionamiento (S/)
-                  </Label>
+              {!isHome && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <ParkingCircle className="w-3.5 h-3.5" style={{ color: "var(--md-on-surface-variant)" }} />
+                    <Label className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
+                      Estacionamiento (S/)
+                    </Label>
+                  </div>
+                  <Input
+                    type="number" step="0.5" min="0"
+                    value={formData.parkingCostPEN}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, parkingCostPEN: e.target.value }))}
+                    placeholder="0.00"
+                    disabled={isSubmitting}
+                  />
                 </div>
-                <Input
-                  type="number" step="0.5" min="0"
-                  value={formData.parkingCostPEN}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, parkingCostPEN: e.target.value }))}
-                  placeholder="0.00"
-                  disabled={isSubmitting}
-                />
-              </div>
+              )}
+              {isHome && (
+                <p className="text-xs py-1" style={{ color: "var(--md-on-surface-variant)" }}>
+                  Carga en casa — el costo se calcula con tu tarifa de electricidad (S/ {rateKwh}/kWh).
+                </p>
+              )}
             </div>
           </GlassCard>
 
