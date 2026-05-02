@@ -97,21 +97,15 @@ export default function HomePage() {
           />
 
           <div className="relative">
-            {/* Overline */}
-            <p
-              className="type-label-sm"
-              style={{ color: "var(--md-on-primary-container)", opacity: 0.7 }}
-            >
-              Changan Automobile
-            </p>
-
-            {/* Brand name — Space Grotesk Display */}
-            <div className="mt-2 leading-none">
+            {/* Brand name */}
+            <div className="mt-1 leading-none">
               <h1
-                className="type-display-lg"
                 style={{
                   fontFamily: "'NOS', 'Space Grotesk', system-ui, sans-serif",
                   letterSpacing: "0.04em",
+                  fontSize: "clamp(52px, 14vw, 72px)",
+                  fontWeight: 700,
+                  lineHeight: 1,
                 }}
               >
                 <span style={{ color: "var(--md-on-primary-container)" }}>DEEPAL </span>
