@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { GlassCard } from "@/components/ui/card";
@@ -89,44 +89,74 @@ export default function NewChargePage() {
     }
   };
 
-  // Shared slider row component
+  // Shared slider row — local string state allows free typing without React overwriting mid-edit
   const SliderRow = ({
-    label, value, min, max,
-    onChange, onInputChange,
+    label, value, min, max, onChange, onInputChange,
   }: {
     label: string; value: number; min: number; max: number;
     onChange: (v: string) => void; onInputChange: (v: string) => void;
-  }) => (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label className="text-xs font-medium" style={{ color: "var(--md-on-surface-variant)" }}>
-          {label}
-        </Label>
-        <Input
-          type="number"
+  }) => {
+    const [raw, setRaw] = useState(value.toString());
+
+    // Sync from slider → keep local string in sync when slider moves
+    useEffect(() => {
+      setRaw(value.toString());
+    }, [value]);
+
+    const handleTextChange = (v: string) => {
+      setRaw(v);
+      const n = parseInt(v, 10);
+      if (!isNaN(n)) onInputChange(String(n));
+    };
+
+    const handleBlur = () => {
+      const n = Math.min(max, Math.max(min, parseInt(raw, 10) || min));
+      setRaw(n.toString());
+      onInputChange(n.toString());
+    };
+
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs font-medium" style={{ color: "var(--md-on-surface-variant)" }}>
+            {label}
+          </Label>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={raw}
+            onChange={(e) => handleTextChange(e.target.value)}
+            onBlur={handleBlur}
+            disabled={isSubmitting}
+            style={{
+              width: "3.75rem",
+              height: "2rem",
+              textAlign: "center",
+              fontSize: "0.875rem",
+              fontWeight: 700,
+              border: "1.5px solid var(--md-primary)",
+              borderRadius: "var(--shape-sm)",
+              background: "transparent",
+              color: "var(--md-on-surface)",
+              outline: "none",
+            }}
+          />
+        </div>
+        <input
+          type="range"
           min={min}
           max={max}
-          step={5}
+          step={1}
           value={value}
-          onChange={(e) => onInputChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           disabled={isSubmitting}
-          className="w-16 h-8 text-center text-sm font-bold p-1"
-          style={{ border: "1.5px solid var(--md-primary)" }}
+          className="w-full"
+          style={{ accentColor: "var(--md-primary)" }}
         />
       </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={5}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={isSubmitting}
-        className="w-full"
-        style={{ accentColor: "var(--md-primary)" }}
-      />
-    </div>
-  );
+    );
+  };
 
   return (
     <AppLayout>
