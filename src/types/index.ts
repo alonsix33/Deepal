@@ -80,7 +80,7 @@ export interface Settings {
   currency: string;
   units: "metric" | "imperial";
   language: "es" | "en";
-  theme: "dark" | "light";
+  theme: "dark" | "light" | "system";
   notificationsEnabled: boolean;
   electricityRateKwh: number;
   batteryCapacity: number;
