@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* ─── Custom fonts ─── */
+@font-face {
+  font-family: "NOS";
+  src: url("/fonts/NOS.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ─── MD3 Color System ─── */
 /* Light mode (default) — seed: #0057CC Deepal Tech Blue */
 :root {

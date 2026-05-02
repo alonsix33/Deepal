@@ -110,9 +110,9 @@ export default function HomePage() {
               <h1
                 className="type-display-lg"
                 style={{
-                  fontFamily: "var(--font-display, 'Space Grotesk', system-ui, sans-serif)",
+                  fontFamily: "'NOS', 'Space Grotesk', system-ui, sans-serif",
                   color: "var(--md-on-primary-container)",
-                  letterSpacing: "-0.02em",
+                  letterSpacing: "0.04em",
                 }}
               >
                 DEEPAL
@@ -122,7 +122,8 @@ export default function HomePage() {
                 style={{
                   background: "var(--md-primary)",
                   color: "var(--md-on-primary)",
-                  fontFamily: "var(--font-display, 'Space Grotesk', system-ui, sans-serif)",
+                  fontFamily: "'NOS', 'Space Grotesk', system-ui, sans-serif",
+                  letterSpacing: "0.06em",
                 }}
               >
                 S05
