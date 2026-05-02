@@ -40,15 +40,13 @@ export async function GET() {
     const averageCostPerKm =
       totalKmDriven > 0 ? totalEnergyCost / totalKmDriven : 0;
 
-    const lastService = services
-      .filter((s) => s.serviceType.toLowerCase().includes("servicio"))
-      .sort((a, b) => b.odometer - a.odometer)[0];
-    const lastServiceKm = lastService?.odometer || 0;
-    const nextServiceKm = Math.max(
-      0,
-      Math.ceil((lastServiceKm + 1) / 10000) * 10000 -
-        vehicle.currentOdometer
-    );
+    // Next service: Option B — 5k, 10k, 20k, 30k, 40k ...
+    const cur = vehicle.currentOdometer;
+    let nextMilestone: number;
+    if (cur < 5_000) nextMilestone = 5_000;
+    else if (cur < 10_000) nextMilestone = 10_000;
+    else nextMilestone = Math.ceil((cur + 1) / 10_000) * 10_000;
+    const nextServiceKm = Math.max(0, nextMilestone - cur);
 
     return NextResponse.json({
       totalKmDriven,
