@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { GlassCard } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useStore } from "@/store/useStore";
@@ -16,6 +15,7 @@ import {
   Gauge,
   Building,
   AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -24,139 +24,172 @@ export default function MaintenancePage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredServices = services
-    .filter((service) => {
-      return (
+    .filter(
+      (service) =>
         service.serviceType.toLowerCase().includes(searchTerm.toLowerCase()) ||
         service.provider?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         service.notes?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    })
+    )
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const totalCost = services.reduce((sum, s) => sum + s.costPEN, 0);
 
-  // Calculate next service
   const lastService = services
     .filter((s) => s.serviceType.toLowerCase().includes("servicio"))
     .sort((a, b) => b.odometer - a.odometer)[0];
   const lastServiceKm = lastService?.odometer || 0;
-  const nextServiceKm =
-    Math.ceil((lastServiceKm + 1) / 10000) * 10000;
+  const nextServiceKm = Math.ceil((lastServiceKm + 1) / 10000) * 10000;
   const kmToNextService = nextServiceKm - vehicle.currentOdometer;
+  const isUrgent = kmToNextService <= 1000;
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="space-y-4">
+        {/* Page title */}
+        <div className="flex items-center justify-between pt-1">
           <div>
-            <h1 className="text-2xl font-bold">Mantenimiento</h1>
-            <p className="text-[var(--muted-foreground)]">
-              Historial de servicios y mantenimiento
+            <h1
+              className="text-2xl font-bold"
+              style={{
+                color: "var(--md-on-surface)",
+                fontFamily: "var(--font-display, 'Space Grotesk', system-ui)",
+              }}
+            >
+              Mantenimiento
+            </h1>
+            <p className="text-sm mt-0.5" style={{ color: "var(--md-on-surface-variant)" }}>
+              Servicios y mantenimiento
             </p>
           </div>
           <Link href="/maintenance/new">
-            <Button variant="cyan" className="gap-2">
+            <Button variant="filled" size="sm" className="gap-2"
+              style={{ background: "var(--color-service)", color: "white" } as React.CSSProperties}
+            >
               <Plus className="w-4 h-4" />
-              Nuevo Servicio
+              Nuevo
             </Button>
           </Link>
         </div>
 
-        {/* Next Service Alert */}
-        <GlassCard
-          className={
-            kmToNextService <= 1000
-              ? "border-[var(--deepal-warning)]/50 bg-[var(--deepal-warning)]/5"
-              : ""
-          }
+        {/* Next service alert */}
+        <div
+          className="rounded-[var(--shape-lg)] p-4 flex items-start gap-3"
+          style={{
+            background: isUrgent
+              ? "var(--md-error-container)"
+              : "var(--color-service-container)",
+            color: isUrgent
+              ? "var(--md-on-error-container)"
+              : "var(--color-service-on-container)",
+          }}
         >
-          <div className="flex items-start gap-3">
-            <AlertCircle
-              className={`w-5 h-5 mt-0.5 ${
-                kmToNextService <= 1000
-                  ? "text-[var(--deepal-warning)]"
-                  : "text-[var(--deepal-blue)]"
-              }`}
-            />
-            <div>
-              <p className="font-medium">Próximo Servicio</p>
-              <p className="text-sm text-[var(--muted-foreground)]">
-                {kmToNextService > 0 ? (
-                  <>
-                    Faltan <span className="font-bold">{formatKm(kmToNextService)}</span> para
-                    el próximo servicio programado a los {formatKm(nextServiceKm)}.
-                  </>
-                ) : (
-                  <>
-                    Ya pasaste el kilometraje para el servicio. Agenda una cita
-                    pronto.
-                  </>
-                )}
+          {isUrgent ? (
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "var(--md-error)" }} />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "var(--color-service)" }} />
+          )}
+          <div>
+            <p className="font-semibold text-sm">Próximo Servicio</p>
+            <p className="text-xs mt-0.5" style={{ opacity: 0.85 }}>
+              {kmToNextService > 0 ? (
+                <>
+                  Faltan <span className="font-bold">{formatKm(kmToNextService)}</span> para el
+                  servicio programado a los {formatKm(nextServiceKm)}.
+                </>
+              ) : (
+                "Ya pasaste el kilometraje para el servicio. Agenda una cita."
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { label: "Servicios", value: String(services.length), color: "var(--color-service)" },
+            { label: "Costo total", value: formatCurrency(totalCost) },
+          ].map((stat) => (
+            <div key={stat.label} className="card-filled p-3 text-center">
+              <p
+                className="text-xl font-bold"
+                style={{
+                  color: stat.color ?? "var(--md-on-surface)",
+                  fontFamily: "var(--font-display, system-ui)",
+                }}
+              >
+                {stat.value}
+              </p>
+              <p className="text-[11px] mt-0.5" style={{ color: "var(--md-on-surface-variant)" }}>
+                {stat.label}
               </p>
             </div>
-          </div>
-        </GlassCard>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-4">
-          <GlassCard className="text-center">
-            <p className="text-sm text-[var(--muted-foreground)]">
-              Total Servicios
-            </p>
-            <p className="text-2xl font-bold text-[var(--deepal-blue)]">
-              {services.length}
-            </p>
-          </GlassCard>
-          <GlassCard className="text-center">
-            <p className="text-sm text-[var(--muted-foreground)]">
-              Costo Total
-            </p>
-            <p className="text-2xl font-bold">{formatCurrency(totalCost)}</p>
-          </GlassCard>
+          ))}
         </div>
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            style={{ color: "var(--md-on-surface-variant)" }}
+          />
           <Input
             placeholder="Buscar por tipo de servicio..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-11"
           />
         </div>
 
-        {/* Services List */}
-        <div className="space-y-3">
+        {/* List */}
+        <div className="space-y-2.5">
           {filteredServices.length === 0 ? (
-            <GlassCard className="text-center py-12">
-              <Wrench className="w-12 h-12 mx-auto text-[var(--muted-foreground)] mb-4" />
-              <p className="text-lg font-medium">No hay servicios registrados</p>
-              <p className="text-[var(--muted-foreground)] mt-1">
+            <div className="card-outlined text-center py-14 px-6">
+              <div
+                className="w-14 h-14 rounded-full mx-auto flex items-center justify-center mb-4"
+                style={{ background: "var(--color-service-container)" }}
+              >
+                <Wrench className="w-7 h-7" style={{ color: "var(--color-service)" }} />
+              </div>
+              <p className="font-semibold text-base" style={{ color: "var(--md-on-surface)" }}>
+                Sin servicios registrados
+              </p>
+              <p className="text-sm mt-1" style={{ color: "var(--md-on-surface-variant)" }}>
                 Registra el primer servicio de tu vehículo
               </p>
-              <Link href="/maintenance/new" className="mt-4 inline-block">
-                <Button variant="cyan" className="gap-2">
+              <Link href="/maintenance/new" className="mt-5 inline-block">
+                <Button variant="filled" className="gap-2"
+                  style={{ background: "var(--color-service)" } as React.CSSProperties}
+                >
                   <Plus className="w-4 h-4" />
                   Registrar Servicio
                 </Button>
               </Link>
-            </GlassCard>
+            </div>
           ) : (
             filteredServices.map((service) => (
-              <GlassCard
-                key={service.id}
-                className="hover:border-[var(--deepal-blue)]/30 transition-all"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-lg bg-[var(--deepal-blue)]/10">
-                      <Wrench className="w-5 h-5 text-[var(--deepal-blue)]" />
+              <div key={service.id} className="card-outlined p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className="w-9 h-9 rounded-[var(--shape-md)] flex items-center justify-center shrink-0"
+                      style={{
+                        background: "var(--color-service-container)",
+                        color: "var(--color-service)",
+                      }}
+                    >
+                      <Wrench className="w-4 h-4" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold">{service.serviceType}</h3>
-                      <div className="flex flex-wrap gap-3 mt-1 text-sm text-[var(--muted-foreground)]">
+                    <div className="min-w-0">
+                      <h3
+                        className="font-semibold text-sm truncate"
+                        style={{ color: "var(--md-on-surface)" }}
+                      >
+                        {service.serviceType}
+                      </h3>
+                      <div
+                        className="flex flex-wrap gap-2 mt-1 text-xs"
+                        style={{ color: "var(--md-on-surface-variant)" }}
+                      >
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {formatDate(service.date)}
@@ -173,61 +206,71 @@ export default function MaintenancePage() {
                         )}
                       </div>
                       {service.notes && (
-                        <p className="text-sm text-[var(--muted-foreground)] mt-2">
+                        <p
+                          className="text-xs mt-1 truncate"
+                          style={{ color: "var(--md-on-surface-variant)" }}
+                        >
                           {service.notes}
                         </p>
                       )}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-lg text-[var(--deepal-blue)]">
+                  <div className="text-right shrink-0">
+                    <p
+                      className="font-bold text-sm"
+                      style={{ color: "var(--color-service)" }}
+                    >
                       {formatCurrency(service.costPEN)}
                     </p>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="mt-2 text-[var(--destructive)] hover:text-[var(--destructive)] hover:bg-[var(--destructive)]/10"
+                      className="mt-1 h-7 w-7"
+                      style={{ color: "var(--md-error)" } as React.CSSProperties}
                       onClick={() => deleteService(service.id)}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 </div>
-              </GlassCard>
+              </div>
             ))
           )}
         </div>
 
-        {/* Maintenance Schedule Info */}
-        <GlassCard>
-          <h3 className="font-semibold mb-4">Programa de Mantenimiento</h3>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between py-2 border-b border-[var(--border)]">
-              <span className="text-[var(--muted-foreground)]">
-                1er Servicio
-              </span>
-              <span>5,000 km - S/ 250-350</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-[var(--border)]">
-              <span className="text-[var(--muted-foreground)]">
-                2do Servicio
-              </span>
-              <span>15,000 km - S/ 300-400</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-[var(--border)]">
-              <span className="text-[var(--muted-foreground)]">
-                3er Servicio
-              </span>
-              <span>25,000 km - S/ 350-450</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-[var(--muted-foreground)]">
-                Servicio Mayor
-              </span>
-              <span>40,000 km - S/ 600-800</span>
-            </div>
+        {/* Maintenance schedule */}
+        <div className="card-outlined p-4">
+          <h3
+            className="font-semibold mb-3"
+            style={{ color: "var(--md-on-surface)", fontFamily: "var(--font-display, system-ui)" }}
+          >
+            Programa de Mantenimiento
+          </h3>
+          <div className="space-y-0">
+            {[
+              { label: "1er Servicio", km: "5,000 km", cost: "S/ 250–350" },
+              { label: "2do Servicio", km: "15,000 km", cost: "S/ 300–400" },
+              { label: "3er Servicio", km: "25,000 km", cost: "S/ 350–450" },
+              { label: "Servicio Mayor", km: "40,000 km", cost: "S/ 600–800" },
+            ].map((item, i, arr) => (
+              <div
+                key={item.label}
+                className="flex justify-between py-2.5 text-sm"
+                style={{
+                  borderBottom: i < arr.length - 1 ? "1px solid var(--md-outline-variant)" : undefined,
+                }}
+              >
+                <span style={{ color: "var(--md-on-surface-variant)" }}>{item.label}</span>
+                <div className="text-right">
+                  <span className="font-medium" style={{ color: "var(--md-on-surface)" }}>
+                    {item.km}
+                  </span>
+                  <span style={{ color: "var(--md-on-surface-variant)" }}> · {item.cost}</span>
+                </div>
+              </div>
+            ))}
           </div>
-        </GlassCard>
+        </div>
       </div>
     </AppLayout>
   );

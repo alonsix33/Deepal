@@ -46,6 +46,9 @@ import {
   Loader2,
   Check,
   AlertCircle,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -384,6 +387,33 @@ export default function SettingsPage() {
             Preferencias
           </h2>
           <div className="space-y-4">
+            {/* Theme */}
+            <div className="space-y-2">
+              <Label>Tema</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {(["light", "system", "dark"] as const).map((t) => {
+                  const isActive = (settings.theme ?? "system") === t;
+                  const Icon = t === "light" ? Sun : t === "dark" ? Moon : Monitor;
+                  const label = t === "light" ? "Claro" : t === "dark" ? "Oscuro" : "Sistema";
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => updateSettings({ theme: t })}
+                      className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-[var(--shape-md)] border text-xs font-medium transition-all"
+                      style={{
+                        background: isActive ? "var(--md-primary-container)" : "transparent",
+                        borderColor: isActive ? "var(--md-primary)" : "var(--md-outline-variant)",
+                        color: isActive ? "var(--md-on-primary-container)" : "var(--md-on-surface-variant)",
+                      }}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="language-select">Idioma</Label>
               <Select

@@ -1,152 +1,447 @@
 @import "tailwindcss";
 
+/* ─── MD3 Color System ─── */
+/* Light mode (default) — seed: #0057CC Deepal Tech Blue */
 :root {
-  --black: #050505;
-  --black-2: #0A0A0A;
-  --dark: #0E0E10;
-  --dark-2: #141416;
-  --card: #1A1A1E;
-  --card-hover: #222226;
-  --card-border: #2A2A2E;
-  --card-border-hover: #3A3A3E;
+  /* Primary */
+  --md-primary: #0057CC;
+  --md-on-primary: #FFFFFF;
+  --md-primary-container: #D6E4FF;
+  --md-on-primary-container: #001B47;
 
-  --deepal-cyan: #00D4FF;
-  --deepal-cyan-dim: rgba(0, 212, 255, 0.15);
-  --deepal-cyan-glow: rgba(0, 212, 255, 0.4);
-  --deepal-blue: #0088FF;
-  --deepal-blue-dim: rgba(0, 136, 255, 0.15);
-  --deepal-teal: #00E6A0;
-  --deepal-teal-dim: rgba(0, 230, 160, 0.15);
+  /* Secondary */
+  --md-secondary: #4F5F7A;
+  --md-on-secondary: #FFFFFF;
+  --md-secondary-container: #D6E3FF;
+  --md-on-secondary-container: #0C1C35;
 
-  --energy-green: #00E676;
-  --energy-green-dim: rgba(0, 230, 118, 0.15);
-  --fuel-amber: #FF9500;
-  --fuel-amber-dim: rgba(255, 149, 0, 0.15);
-  --service-purple: #AF52DE;
-  --service-purple-dim: rgba(175, 82, 222, 0.15);
-  --parking-gold: #FFD700;
-  --parking-gold-dim: rgba(255, 215, 0, 0.12);
+  /* Tertiary — electric/eco green */
+  --md-tertiary: #006C51;
+  --md-on-tertiary: #FFFFFF;
+  --md-tertiary-container: #88F8CC;
+  --md-on-tertiary-container: #002117;
 
-  --warning: #FF9500;
-  --warning-dim: rgba(255, 149, 0, 0.15);
-  --error: #FF453A;
-  --error-dim: rgba(255, 69, 58, 0.15);
-  --success: #30D158;
-  --info: #5E5CE6;
+  /* Error */
+  --md-error: #B3261E;
+  --md-on-error: #FFFFFF;
+  --md-error-container: #F9DEDC;
+  --md-on-error-container: #410E0B;
 
-  --text-primary: #F5F5F7;
-  --text-secondary: #98989D;
-  --text-tertiary: #6E6E73;
-  --text-inverse: #050505;
+  /* Surface */
+  --md-surface: #F7F9FD;
+  --md-on-surface: #181C24;
+  --md-surface-variant: #DFE4EF;
+  --md-on-surface-variant: #42474E;
 
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 24px;
+  /* Surface containers (MD3 elevation via tone) */
+  --md-surface-container-lowest: #FFFFFF;
+  --md-surface-container-low: #F1F4FA;
+  --md-surface-container: #EBF0F7;
+  --md-surface-container-high: #E1E8F2;
+  --md-surface-container-highest: #D6DFE9;
+
+  /* Inverse */
+  --md-inverse-surface: #2D3038;
+  --md-inverse-on-surface: #EEF1F8;
+  --md-inverse-primary: #A8C8FF;
+
+  /* Outline */
+  --md-outline: #717B89;
+  --md-outline-variant: #C1C8D4;
+
+  /* Shadow / Scrim */
+  --md-shadow: rgba(0, 0, 0, 0.15);
+  --md-scrim: rgba(0, 0, 0, 0.32);
+
+  /* ── Semantic colors for Deepal categories ── */
+  --color-electric: #005FAB;
+  --color-electric-container: #CFE5FF;
+  --color-electric-on-container: #001D36;
+
+  --color-fuel: #8B4800;
+  --color-fuel-container: #FFDCBE;
+  --color-fuel-on-container: #2E1500;
+
+  --color-service: #6750A4;
+  --color-service-container: #EADDFF;
+  --color-service-on-container: #21005D;
+
+  --color-parking: #6A5E00;
+  --color-parking-container: #F4E400;
+  --color-parking-on-container: #1F1C00;
+
+  /* ── Shape scale (MD3) ── */
+  --shape-xs: 4px;
+  --shape-sm: 8px;
+  --shape-md: 12px;
+  --shape-lg: 16px;
+  --shape-xl: 28px;
+  --shape-full: 9999px;
+
+  /* Legacy aliases (used in some components) */
+  --radius-sm: var(--shape-sm);
+  --radius-md: var(--shape-md);
+  --radius-lg: var(--shape-lg);
+  --radius-xl: var(--shape-xl);
 }
 
+/* ── Dark mode overrides ── */
+.dark {
+  /* Primary */
+  --md-primary: #A8C8FF;
+  --md-on-primary: #002E66;
+  --md-primary-container: #004494;
+  --md-on-primary-container: #D6E4FF;
+
+  /* Secondary */
+  --md-secondary: #B9C7E0;
+  --md-on-secondary: #233347;
+  --md-secondary-container: #384759;
+  --md-on-secondary-container: #D6E3FF;
+
+  /* Tertiary */
+  --md-tertiary: #6BDBB1;
+  --md-on-tertiary: #003828;
+  --md-tertiary-container: #004F3A;
+  --md-on-tertiary-container: #88F8CC;
+
+  /* Error */
+  --md-error: #F2B8B5;
+  --md-on-error: #601410;
+  --md-error-container: #8C1D18;
+  --md-on-error-container: #F9DEDC;
+
+  /* Surface — dark navy, not pure black */
+  --md-surface: #0F1317;
+  --md-on-surface: #DFE3E8;
+  --md-surface-variant: #42474E;
+  --md-on-surface-variant: #C2C7CF;
+
+  /* Surface containers */
+  --md-surface-container-lowest: #0A0D11;
+  --md-surface-container-low: #171C20;
+  --md-surface-container: #1B2026;
+  --md-surface-container-high: #222830;
+  --md-surface-container-highest: #2D333B;
+
+  /* Inverse */
+  --md-inverse-surface: #DFE3E8;
+  --md-inverse-on-surface: #2D3038;
+  --md-inverse-primary: #0057CC;
+
+  /* Outline */
+  --md-outline: #8B96A2;
+  --md-outline-variant: #42474E;
+
+  /* Shadow */
+  --md-shadow: rgba(0, 0, 0, 0.4);
+  --md-scrim: rgba(0, 0, 0, 0.6);
+
+  /* Semantic colors dark */
+  --color-electric: #99CBFF;
+  --color-electric-container: #004880;
+  --color-electric-on-container: #CFE5FF;
+
+  --color-fuel: #FFB870;
+  --color-fuel-container: #622F00;
+  --color-fuel-on-container: #FFDCBE;
+
+  --color-service: #D0BCFF;
+  --color-service-container: #4F378A;
+  --color-service-on-container: #EADDFF;
+
+  --color-parking: #D9C700;
+  --color-parking-container: #3F3700;
+  --color-parking-on-container: #F4E400;
+}
+
+/* ─── Tailwind v4 theme mapping ─── */
 @theme inline {
-  --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
-  --font-display: "Playfair Display Variable", "Playfair Display", Georgia, serif;
+  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Space Grotesk", "Inter Variable", system-ui, sans-serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
 
-  --color-black: var(--black);
-  --color-dark: var(--dark);
-  --color-card: var(--card);
-  --color-card-border: var(--card-border);
+  /* MD3 color tokens as Tailwind utilities */
+  --color-md-primary: var(--md-primary);
+  --color-md-on-primary: var(--md-on-primary);
+  --color-md-primary-container: var(--md-primary-container);
+  --color-md-on-primary-container: var(--md-on-primary-container);
+  --color-md-secondary: var(--md-secondary);
+  --color-md-on-secondary: var(--md-on-secondary);
+  --color-md-secondary-container: var(--md-secondary-container);
+  --color-md-tertiary: var(--md-tertiary);
+  --color-md-on-tertiary: var(--md-on-tertiary);
+  --color-md-tertiary-container: var(--md-tertiary-container);
+  --color-md-surface: var(--md-surface);
+  --color-md-on-surface: var(--md-on-surface);
+  --color-md-surface-variant: var(--md-surface-variant);
+  --color-md-on-surface-variant: var(--md-on-surface-variant);
+  --color-md-surface-container-lowest: var(--md-surface-container-lowest);
+  --color-md-surface-container-low: var(--md-surface-container-low);
+  --color-md-surface-container: var(--md-surface-container);
+  --color-md-surface-container-high: var(--md-surface-container-high);
+  --color-md-surface-container-highest: var(--md-surface-container-highest);
+  --color-md-outline: var(--md-outline);
+  --color-md-outline-variant: var(--md-outline-variant);
+  --color-md-error: var(--md-error);
+  --color-md-error-container: var(--md-error-container);
+  --color-md-on-error-container: var(--md-on-error-container);
+  --color-md-inverse-surface: var(--md-inverse-surface);
+  --color-md-inverse-on-surface: var(--md-inverse-on-surface);
+  --color-md-inverse-primary: var(--md-inverse-primary);
 
-  --color-deepal-cyan: var(--deepal-cyan);
-  --color-deepal-blue: var(--deepal-blue);
-  --color-deepal-teal: var(--deepal-teal);
-  --color-energy-green: var(--energy-green);
-  --color-fuel-amber: var(--fuel-amber);
-  --color-service-purple: var(--service-purple);
-  --color-parking-gold: var(--parking-gold);
+  /* Semantic */
+  --color-electric: var(--color-electric);
+  --color-electric-container: var(--color-electric-container);
+  --color-fuel: var(--color-fuel);
+  --color-fuel-container: var(--color-fuel-container);
+  --color-service: var(--color-service);
+  --color-service-container: var(--color-service-container);
+  --color-parking: var(--color-parking);
+  --color-parking-container: var(--color-parking-container);
 
-  --color-warning: var(--warning);
-  --color-error: var(--error);
-  --color-success: var(--success);
-
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-tertiary: var(--text-tertiary);
-
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
+  /* Shape */
+  --radius-xs: var(--shape-xs);
+  --radius-sm: var(--shape-sm);
+  --radius-md: var(--shape-md);
+  --radius-lg: var(--shape-lg);
+  --radius-xl: var(--shape-xl);
+  --radius-full: var(--shape-full);
 }
 
-* {
-  border-color: var(--card-border);
+/* ─── Legacy Shadcn/old aliases (backward compat for forms & other components) ─── */
+:root {
+  --background: var(--md-surface);
+  --foreground: var(--md-on-surface);
+  --card: var(--md-surface-container-low);
+  --card-foreground: var(--md-on-surface);
+  --border: var(--md-outline-variant);
+  --input: var(--md-outline);
+  --ring: var(--md-primary);
+  --primary: var(--md-primary);
+  --primary-foreground: var(--md-on-primary);
+  --secondary: var(--md-secondary-container);
+  --secondary-foreground: var(--md-on-secondary-container);
+  --muted: var(--md-surface-container);
+  --muted-foreground: var(--md-on-surface-variant);
+  --accent: var(--md-secondary-container);
+  --accent-foreground: var(--md-on-secondary-container);
+  --destructive: var(--md-error);
+  --destructive-foreground: var(--md-on-error);
+  --popover: var(--md-surface-container-highest);
+  --popover-foreground: var(--md-on-surface);
+
+  /* Old Deepal color aliases */
+  --deepal-cyan: var(--md-primary);
+  --deepal-cyan-dim: color-mix(in srgb, var(--md-primary) 15%, transparent);
+  --deepal-cyan-glow: color-mix(in srgb, var(--md-primary) 40%, transparent);
+  --deepal-blue: var(--md-secondary);
+  --deepal-blue-dim: color-mix(in srgb, var(--md-secondary) 15%, transparent);
+  --deepal-teal: var(--md-tertiary);
+  --deepal-teal-dim: color-mix(in srgb, var(--md-tertiary) 15%, transparent);
+  --deepal-black: var(--md-on-primary);
+  --deepal-warning: var(--color-fuel);
+  --black: var(--md-surface);
+  --black-2: var(--md-surface-container-low);
+  --text-primary: var(--md-on-surface);
+  --text-secondary: var(--md-on-surface-variant);
+  --text-tertiary: color-mix(in srgb, var(--md-on-surface-variant) 70%, transparent);
+  --card-border: var(--md-outline-variant);
+  --card-border-hover: var(--md-outline);
+}
+
+/* ─── Base ─── */
+*, *::before, *::after {
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
 body {
-  background: var(--black);
-  color: var(--text-primary);
-  font-family: "Inter Variable", system-ui, -apple-system, sans-serif;
+  background-color: var(--md-surface);
+  color: var(--md-on-surface);
+  font-family: "Inter Variable", "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Premium Glassmorphism */
-.glass {
-  background: rgba(26, 26, 30, 0.72);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+/* ─── MD3 Surface utilities ─── */
+.surface {
+  background-color: var(--md-surface);
+  color: var(--md-on-surface);
 }
 
-.glass-strong {
-  background: rgba(20, 20, 22, 0.85);
-  backdrop-filter: blur(30px) saturate(1.6);
-  -webkit-backdrop-filter: blur(30px) saturate(1.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.surface-low {
+  background-color: var(--md-surface-container-low);
+  color: var(--md-on-surface);
 }
 
-/* Card Base */
+.surface-container {
+  background-color: var(--md-surface-container);
+  color: var(--md-on-surface);
+}
+
+.surface-high {
+  background-color: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+}
+
+.surface-highest {
+  background-color: var(--md-surface-container-highest);
+  color: var(--md-on-surface);
+}
+
+/* ─── MD3 Card variants ─── */
+/* Elevated: surface + shadow */
+.card-elevated {
+  background-color: var(--md-surface-container-low);
+  border-radius: var(--shape-lg);
+  box-shadow:
+    0 1px 2px var(--md-shadow),
+    0 1px 3px 1px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.card-elevated:active {
+  transform: scale(0.988);
+}
+
+/* Filled: surface-container, no border */
+.card-filled {
+  background-color: var(--md-surface-container);
+  border-radius: var(--shape-lg);
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.card-filled:active {
+  transform: scale(0.988);
+}
+
+/* Outlined: surface + border */
+.card-outlined {
+  background-color: var(--md-surface);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--shape-lg);
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.card-outlined:active {
+  transform: scale(0.988);
+}
+
+/* Legacy alias */
 .card-premium {
-  background: var(--card);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--card-border);
-  transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+  background-color: var(--md-surface-container-low);
+  border-radius: var(--shape-lg);
+  border: 1px solid var(--md-outline-variant);
+  transition: border-color 0.2s ease, transform 0.15s ease;
 }
 
 .card-premium:active {
-  transform: scale(0.985);
+  transform: scale(0.988);
 }
 
-/* Gradients */
-.gradient-cyan {
-  background: linear-gradient(135deg, var(--deepal-cyan) 0%, var(--deepal-blue) 100%);
+/* ─── MD3 Typography scale ─── */
+.type-display-lg {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: clamp(40px, 10vw, 57px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
 }
 
-.gradient-card-accent {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 212, 255, 0.08) 0%,
-    rgba(0, 136, 255, 0.02) 100%
-  );
+.type-display-md {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: clamp(32px, 8vw, 45px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
+.type-headline-lg {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.type-headline-md {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.type-title-lg {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.type-title-md {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.type-label-lg {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.type-label-sm {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ─── MD3 State layers ─── */
+.state-hover {
+  position: relative;
+}
+.state-hover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--md-on-surface);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.state-hover:hover::after {
+  opacity: 0.08;
+}
+.state-hover:active::after {
+  opacity: 0.12;
+}
+
+/* ─── Hero gradient ─── */
 .gradient-hero {
   background:
-    radial-gradient(ellipse 80% 60% at 50% -20%, rgba(0, 212, 255, 0.08) 0%, transparent 100%),
-    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(0, 230, 160, 0.04) 0%, transparent 100%);
+    linear-gradient(135deg, var(--md-primary-container) 0%, var(--md-surface-container-high) 60%, var(--md-secondary-container) 100%);
 }
 
-/* Glows */
-.glow-cyan {
-  box-shadow: 0 0 24px var(--deepal-cyan-glow);
+.dark .gradient-hero {
+  background:
+    linear-gradient(135deg, var(--md-primary-container) 0%, var(--md-surface-container-high) 60%, var(--md-surface-container) 100%);
 }
 
-.glow-text-cyan {
-  text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
-}
-
-/* Scrollbar */
+/* ─── Scrollbar ─── */
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -154,11 +449,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--card-border);
+  background: var(--md-outline-variant);
   border-radius: 2px;
 }
 
-/* Hide number spinners */
+/* ─── Form inputs ─── */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -168,12 +463,11 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Range input styling */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
-  background: var(--card-border);
+  background: var(--md-outline-variant);
   border-radius: 2px;
   outline: none;
 }
@@ -183,13 +477,13 @@ input[type="range"]::-webkit-slider-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--deepal-cyan);
+  background: var(--md-primary);
   cursor: pointer;
-  box-shadow: 0 0 12px var(--deepal-cyan-glow);
-  border: 3px solid var(--black);
+  border: 3px solid var(--md-surface);
+  box-shadow: 0 0 0 2px var(--md-primary);
 }
 
-/* Animations */
+/* ─── Animations ─── */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -211,8 +505,8 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 16px var(--deepal-cyan-glow); }
-  50% { box-shadow: 0 0 32px var(--deepal-cyan-glow); }
+  0%, 100% { box-shadow: 0 0 16px color-mix(in srgb, var(--md-primary) 40%, transparent); }
+  50% { box-shadow: 0 0 32px color-mix(in srgb, var(--md-primary) 60%, transparent); }
 }
 
 @keyframes battery-pulse {
@@ -231,29 +525,12 @@ input[type="range"]::-webkit-slider-thumb {
   to { transform: translateY(0); opacity: 1; }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.5s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2.5s ease-in-out infinite;
-}
-
-.animate-battery-pulse {
-  animation: battery-pulse 1.5s ease-in-out infinite;
-}
-
-.animate-float-3d {
-  animation: float-3d 6s ease-in-out infinite;
-}
+.animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+.animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+.animate-scale-in { animation: scaleIn 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+.animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+.animate-battery-pulse { animation: battery-pulse 1.5s ease-in-out infinite; }
+.animate-float-3d { animation: float-3d 6s ease-in-out infinite; }
 
 .stagger-1 { animation-delay: 0.05s; }
 .stagger-2 { animation-delay: 0.1s; }
@@ -264,15 +541,7 @@ input[type="range"]::-webkit-slider-thumb {
 .stagger-7 { animation-delay: 0.35s; }
 .stagger-8 { animation-delay: 0.4s; }
 
-/* Safe area for mobile */
-.safe-top {
-  padding-top: env(safe-area-inset-top, 0px);
-}
-
-.safe-left {
-  padding-left: env(safe-area-inset-left, 0px);
-}
-
-.safe-right {
-  padding-right: env(safe-area-inset-right, 0px);
-}
+/* ─── Safe areas ─── */
+.safe-top { padding-top: env(safe-area-inset-top, 0px); }
+.safe-left { padding-left: env(safe-area-inset-left, 0px); }
+.safe-right { padding-right: env(safe-area-inset-right, 0px); }

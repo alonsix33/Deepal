@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import { BottomNav } from "./BottomNav";
+import { Header } from "./Header";
 import { registerServiceWorker } from "@/lib/serviceWorker";
 
 interface AppLayoutProps {
@@ -15,9 +16,13 @@ export function AppLayout({ children, hideNav }: AppLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--black)]">
+    <div
+      className="min-h-screen"
+      style={{ background: "var(--md-surface)" }}
+    >
+      <Header />
       <main className="min-h-screen">
-        <div className="max-w-lg mx-auto px-4 pt-4 pb-24 safe-top">
+        <div className="max-w-lg mx-auto px-4 pt-18 pb-28 safe-top">
           {children}
         </div>
       </main>

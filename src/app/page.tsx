@@ -3,7 +3,7 @@
 import { useStore } from "@/store/useStore";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ActivityList } from "@/components/dashboard/ActivityList";
-import { formatCurrency, formatKm } from "@/lib/utils";
+import { formatCurrency, formatKm, formatKwh } from "@/lib/utils";
 import { motion, type Variants } from "framer-motion";
 import {
   Zap,
@@ -12,6 +12,7 @@ import {
   Plus,
   Gauge,
   ParkingCircle,
+  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -19,13 +20,13 @@ const stagger: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.06 },
+    transition: { staggerChildren: 0.07 },
   },
 };
 
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] } },
 };
 
 export default function HomePage() {
@@ -35,7 +36,8 @@ export default function HomePage() {
 
   const totalParkingCost = charges.reduce((s, c) => s + c.parkingCostPEN, 0);
   const totalEnergyCost = stats.totalChargeCost + stats.totalFuelCost;
-  const grandTotal = totalEnergyCost + stats.totalMaintenanceCost;
+  const grandTotal =
+    totalEnergyCost + stats.totalMaintenanceCost + totalParkingCost;
 
   const recentActivities = [
     ...charges.map((c) => ({
@@ -68,61 +70,132 @@ export default function HomePage() {
 
   const electricPct = stats.electricUsagePercent;
   const fuelPct = 100 - electricPct;
+  const totalKwh = charges.reduce((s, c) => s + c.kwhCharged, 0);
 
   return (
     <AppLayout>
       <motion.div
-        className="space-y-4 pb-24"
+        className="space-y-4 pb-6"
         variants={stagger}
         initial="hidden"
         animate="show"
       >
-        {/* Hero - Typographic Brand */}
-        <motion.div variants={fadeUp} className="relative overflow-hidden rounded-[var(--radius-md)] gradient-hero px-5 pt-8 pb-5">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--deepal-cyan)]/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-[var(--deepal-blue)]/5 rounded-full blur-2xl" />
+        {/* ── Hero ── */}
+        <motion.div
+          variants={fadeUp}
+          className="relative overflow-hidden rounded-[var(--shape-xl)] gradient-hero px-6 pt-8 pb-6"
+          style={{ boxShadow: "0 2px 12px var(--md-shadow)" }}
+        >
+          {/* Decorative accent circles */}
+          <div
+            className="absolute top-0 right-0 w-56 h-56 rounded-full blur-3xl opacity-30 pointer-events-none"
+            style={{ background: "var(--md-primary)" }}
+          />
+          <div
+            className="absolute bottom-0 left-0 w-36 h-36 rounded-full blur-2xl opacity-20 pointer-events-none"
+            style={{ background: "var(--md-tertiary)" }}
+          />
 
           <div className="relative">
-            <div className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.25em]">
-              Changan
-            </div>
-            <div className="mt-1 flex items-end gap-3">
-              <h1 className="text-[44px] font-bold tracking-[-0.03em] leading-[0.85] text-[var(--text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
+            {/* Overline */}
+            <p
+              className="type-label-sm"
+              style={{ color: "var(--md-on-primary-container)", opacity: 0.7 }}
+            >
+              Changan Automobile
+            </p>
+
+            {/* Brand name — Space Grotesk Display */}
+            <div className="mt-2 flex items-end gap-3 leading-none">
+              <h1
+                className="type-display-lg"
+                style={{
+                  fontFamily: "var(--font-display, 'Space Grotesk', system-ui, sans-serif)",
+                  color: "var(--md-on-primary-container)",
+                  letterSpacing: "-0.02em",
+                }}
+              >
                 DEEPAL
               </h1>
-              <span className="px-2.5 py-1 rounded-md bg-[var(--card-border)] text-sm font-semibold text-[var(--deepal-cyan)] tracking-wider mb-1">
+              <span
+                className="mb-1 px-3 py-1 rounded-[var(--shape-sm)] type-title-lg"
+                style={{
+                  background: "var(--md-primary)",
+                  color: "var(--md-on-primary)",
+                  fontFamily: "var(--font-display, 'Space Grotesk', system-ui, sans-serif)",
+                }}
+              >
                 S05
               </span>
             </div>
-            <div className="flex items-center gap-3 mt-4">
-              <span className="text-xs font-medium text-[var(--text-secondary)]">
-                REEV · 27.28 kWh
-              </span>
-              <span className="w-px h-3 bg-[var(--text-tertiary)]/50" />
-              <span className="text-xs text-[var(--text-tertiary)]">
-                {formatKm(stats.totalKmDriven)}
-              </span>
+
+            {/* Tagline */}
+            <p
+              className="mt-2 type-label-sm tracking-[0.18em]"
+              style={{ color: "var(--md-on-primary-container)" }}
+            >
+              RANGE EXTENDER EV · 27.28 kWh
+            </p>
+
+            {/* Stats strip */}
+            <div
+              className="flex items-center gap-3 mt-3 text-xs"
+              style={{ color: "var(--md-on-primary-container)", opacity: 0.75 }}
+            >
+              <span>{formatKm(stats.totalKmDriven)} recorridos</span>
+              <span
+                className="w-px h-3"
+                style={{ background: "currentColor", opacity: 0.4 }}
+              />
+              <span>{charges.length} cargas · {fuelUps.length} recargas</span>
             </div>
 
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-[var(--card-border)]">
+            {/* Divider + CTA row */}
+            <div
+              className="flex items-center justify-between mt-5 pt-4"
+              style={{ borderTop: "1px solid color-mix(in srgb, var(--md-on-primary-container) 20%, transparent)" }}
+            >
               <div>
-                <div className="text-[10px] text-[var(--text-tertiary)] uppercase tracking-wider">
+                <p
+                  className="type-label-sm"
+                  style={{ color: "var(--md-on-primary-container)", opacity: 0.65 }}
+                >
                   Total invertido
-                </div>
-                <div className="text-2xl font-bold text-[var(--text-primary)] mt-0.5">
+                </p>
+                <p
+                  className="text-2xl font-bold mt-0.5"
+                  style={{
+                    color: "var(--md-on-primary-container)",
+                    fontFamily: "var(--font-display, 'Space Grotesk', system-ui, sans-serif)",
+                  }}
+                >
                   {formatCurrency(grandTotal)}
-                </div>
+                </p>
               </div>
 
               <div className="flex gap-2">
                 <Link href="/charges/new">
-                  <button className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--deepal-cyan)] text-[var(--black)] text-xs font-semibold active:scale-95 transition-transform">
-                    <Plus className="w-3.5 h-3.5" />
+                  <button
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-semibold transition-all active:scale-95"
+                    style={{
+                      background: "var(--md-primary)",
+                      color: "var(--md-on-primary)",
+                      boxShadow: "0 1px 3px var(--md-shadow)",
+                    }}
+                  >
+                    <Zap className="w-3.5 h-3.5" />
                     Carga
                   </button>
                 </Link>
                 <Link href="/fuel/new">
-                  <button className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-[var(--card-border)] text-xs font-medium text-[var(--text-primary)] active:scale-95 transition-transform">
+                  <button
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium transition-all active:scale-95"
+                    style={{
+                      background: "color-mix(in srgb, var(--md-on-primary-container) 12%, transparent)",
+                      color: "var(--md-on-primary-container)",
+                      border: "1px solid color-mix(in srgb, var(--md-on-primary-container) 25%, transparent)",
+                    }}
+                  >
                     <Fuel className="w-3.5 h-3.5" />
                     Gas
                   </button>
@@ -132,144 +205,226 @@ export default function HomePage() {
           </div>
         </motion.div>
 
-        {/* Energy Mix */}
-        <motion.div variants={fadeUp} className="card-premium p-4">
+        {/* ── Energy Mix ── */}
+        <motion.div
+          variants={fadeUp}
+          className="card-filled p-4"
+        >
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+            <h2
+              className="type-label-sm"
+              style={{ color: "var(--md-on-surface-variant)" }}
+            >
               Mix Energético
             </h2>
-            <span className="text-[11px] text-[var(--text-tertiary)]">
-              Total {formatCurrency(totalEnergyCost)}
+            <span
+              className="text-xs font-medium"
+              style={{ color: "var(--md-on-surface-variant)" }}
+            >
+              {formatCurrency(totalEnergyCost)} total
             </span>
           </div>
 
-          {/* Electric vs Fuel bar */}
-          <div className="relative h-8 rounded-full overflow-hidden bg-[var(--card-border)] mb-3">
+          {/* Bar */}
+          <div
+            className="relative h-7 rounded-full overflow-hidden mb-3"
+            style={{ background: "var(--md-surface-container-highest)" }}
+          >
             <motion.div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--deepal-cyan)] to-[var(--deepal-blue)]"
+              className="absolute inset-y-0 left-0"
+              style={{ background: "var(--md-primary)" }}
               initial={{ width: 0 }}
               animate={{ width: `${electricPct}%` }}
               transition={{ duration: 1, ease: [0.32, 0.72, 0, 1] }}
             />
             <motion.div
-              className="absolute inset-y-0 right-0 bg-gradient-to-l from-[var(--fuel-amber)] to-[var(--fuel-amber)]/80"
+              className="absolute inset-y-0 right-0"
+              style={{ background: "var(--color-fuel)" }}
               initial={{ width: 0 }}
               animate={{ width: `${fuelPct}%` }}
               transition={{ duration: 1, ease: [0.32, 0.72, 0, 1] }}
             />
           </div>
 
-          <div className="flex justify-between text-xs">
+          <div className="flex justify-between text-xs gap-4">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[var(--deepal-cyan)]" />
-              <span className="text-[var(--text-secondary)]">Eléctrico</span>
-              <span className="font-semibold text-[var(--text-primary)]">
-                {Math.round(electricPct)}%
-              </span>
-              <span className="text-[var(--text-tertiary)]">
-                {formatCurrency(stats.totalChargeCost)}
-              </span>
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{ background: "var(--md-primary)" }}
+              />
+              <div>
+                <span style={{ color: "var(--md-on-surface-variant)" }}>Eléctrico </span>
+                <span className="font-semibold" style={{ color: "var(--md-on-surface)" }}>
+                  {Math.round(electricPct)}%
+                </span>
+                <span className="ml-1" style={{ color: "var(--md-on-surface-variant)" }}>
+                  · {formatKwh(totalKwh)}
+                </span>
+              </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[var(--fuel-amber)]" />
-              <span className="text-[var(--text-secondary)]">Combustible</span>
-              <span className="font-semibold text-[var(--text-primary)]">
-                {Math.round(fuelPct)}%
-              </span>
-              <span className="text-[var(--text-tertiary)]">
-                {formatCurrency(stats.totalFuelCost)}
-              </span>
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{ background: "var(--color-fuel)" }}
+              />
+              <div>
+                <span style={{ color: "var(--md-on-surface-variant)" }}>Combustible </span>
+                <span className="font-semibold" style={{ color: "var(--md-on-surface)" }}>
+                  {Math.round(fuelPct)}%
+                </span>
+                <span className="ml-1" style={{ color: "var(--md-on-surface-variant)" }}>
+                  · {formatCurrency(stats.totalFuelCost)}
+                </span>
+              </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Quick Stats */}
+        {/* ── Quick Stats ── */}
         <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
-          <div className="card-premium p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-[var(--deepal-cyan-dim)] flex items-center justify-center">
-                <Gauge className="w-4 h-4 text-[var(--deepal-cyan)]" />
-              </div>
+          {/* Cost per km */}
+          <div className="card-outlined p-4">
+            <div
+              className="w-9 h-9 rounded-[var(--shape-md)] flex items-center justify-center mb-3"
+              style={{
+                background: "var(--md-primary-container)",
+                color: "var(--md-on-primary-container)",
+              }}
+            >
+              <Gauge className="w-4.5 h-4.5" />
             </div>
-            <div className="text-2xl font-bold tracking-tight">{formatCurrency(stats.averageCostPerKm)}</div>
-            <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
-              Costo por km · {formatKm(stats.totalKmDriven)} totales
-            </div>
+            <p
+              className="text-2xl font-bold tracking-tight"
+              style={{ color: "var(--md-on-surface)" }}
+            >
+              {formatCurrency(stats.averageCostPerKm)}
+            </p>
+            <p
+              className="text-[11px] mt-0.5"
+              style={{ color: "var(--md-on-surface-variant)" }}
+            >
+              Costo por km
+            </p>
+            <p
+              className="text-[10px] mt-0.5 font-medium"
+              style={{ color: "var(--md-on-surface-variant)", opacity: 0.7 }}
+            >
+              {formatKm(stats.totalKmDriven)} totales
+            </p>
           </div>
 
-          <div className="card-premium p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-[var(--fuel-amber-dim)] flex items-center justify-center">
-                <Wrench className="w-4 h-4 text-[var(--fuel-amber)]" />
-              </div>
+          {/* Next service */}
+          <div className="card-outlined p-4">
+            <div
+              className="w-9 h-9 rounded-[var(--shape-md)] flex items-center justify-center mb-3"
+              style={{
+                background: "var(--color-service-container)",
+                color: "var(--color-service)",
+              }}
+            >
+              <Wrench className="w-4.5 h-4.5" />
             </div>
-            <div className="text-2xl font-bold tracking-tight">{formatKm(stats.nextServiceKm)}</div>
-            <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
-              Próximo servicio · km restantes
-            </div>
+            <p
+              className="text-2xl font-bold tracking-tight"
+              style={{ color: "var(--md-on-surface)" }}
+            >
+              {formatKm(stats.nextServiceKm)}
+            </p>
+            <p
+              className="text-[11px] mt-0.5"
+              style={{ color: "var(--md-on-surface-variant)" }}
+            >
+              Próximo servicio
+            </p>
+            <p
+              className="text-[10px] mt-0.5 font-medium"
+              style={{ color: "var(--md-on-surface-variant)", opacity: 0.7 }}
+            >
+              km restantes
+            </p>
           </div>
         </motion.div>
 
-        {/* Cost Breakdown */}
-        <motion.div variants={fadeUp} className="card-premium p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+        {/* ── Cost Breakdown ── */}
+        <motion.div variants={fadeUp} className="card-filled p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2
+              className="type-label-sm"
+              style={{ color: "var(--md-on-surface-variant)" }}
+            >
               Costos Acumulados
             </h2>
-            <span className="text-sm font-bold">S/ {grandTotal.toFixed(2)}</span>
+            <span
+              className="text-sm font-bold"
+              style={{ color: "var(--md-on-surface)" }}
+            >
+              {formatCurrency(grandTotal)}
+            </span>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {[
               {
                 label: "Electricidad",
                 value: stats.totalChargeCost,
                 icon: Zap,
-                color: "text-[var(--deepal-cyan)]",
-                bg: "bg-[var(--deepal-cyan-dim)]",
-                bar: "bg-[var(--deepal-cyan)]",
+                iconBg: "var(--md-primary-container)",
+                iconColor: "var(--md-on-primary-container)",
+                barColor: "var(--md-primary)",
               },
               {
                 label: "Combustible",
                 value: stats.totalFuelCost,
                 icon: Fuel,
-                color: "text-[var(--fuel-amber)]",
-                bg: "bg-[var(--fuel-amber-dim)]",
-                bar: "bg-[var(--fuel-amber)]",
+                iconBg: "var(--color-fuel-container)",
+                iconColor: "var(--color-fuel)",
+                barColor: "var(--color-fuel)",
               },
               {
                 label: "Estacionamiento",
                 value: totalParkingCost,
                 icon: ParkingCircle,
-                color: "text-[var(--parking-gold)]",
-                bg: "bg-[var(--parking-gold-dim)]",
-                bar: "bg-[var(--parking-gold)]",
+                iconBg: "var(--color-parking-container)",
+                iconColor: "var(--color-parking)",
+                barColor: "var(--color-parking)",
               },
               {
                 label: "Mantenimiento",
                 value: stats.totalMaintenanceCost,
                 icon: Wrench,
-                color: "text-[var(--service-purple)]",
-                bg: "bg-[var(--service-purple-dim)]",
-                bar: "bg-[var(--service-purple)]",
+                iconBg: "var(--color-service-container)",
+                iconColor: "var(--color-service)",
+                barColor: "var(--color-service)",
               },
             ].map((item) => {
               const pct = grandTotal > 0 ? (item.value / grandTotal) * 100 : 0;
               return (
                 <div key={item.label} className="flex items-center gap-3">
-                  <div className={`w-7 h-7 rounded-lg ${item.bg} flex items-center justify-center shrink-0`}>
-                    <item.icon className={`w-3.5 h-3.5 ${item.color}`} />
+                  <div
+                    className="w-8 h-8 rounded-[var(--shape-sm)] flex items-center justify-center shrink-0"
+                    style={{ background: item.iconBg, color: item.iconColor }}
+                  >
+                    <item.icon className="w-3.5 h-3.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[var(--text-secondary)]">{item.label}</span>
-                      <span className="font-medium text-[var(--text-primary)]">
+                    <div className="flex justify-between text-xs mb-1.5">
+                      <span style={{ color: "var(--md-on-surface-variant)" }}>
+                        {item.label}
+                      </span>
+                      <span
+                        className="font-semibold"
+                        style={{ color: "var(--md-on-surface)" }}
+                      >
                         {formatCurrency(item.value)}
                       </span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-[var(--card-border)] overflow-hidden">
+                    <div
+                      className="h-1.5 rounded-full overflow-hidden"
+                      style={{ background: "var(--md-surface-container-highest)" }}
+                    >
                       <motion.div
-                        className={`h-full rounded-full ${item.bar}`}
+                        className="h-full rounded-full"
+                        style={{ background: item.barColor }}
                         initial={{ width: 0 }}
                         animate={{ width: `${pct}%` }}
                         transition={{ duration: 0.8, ease: [0.32, 0.72, 0, 1] }}
@@ -282,7 +437,7 @@ export default function HomePage() {
           </div>
         </motion.div>
 
-        {/* Activity */}
+        {/* ── Recent Activity ── */}
         <motion.div variants={fadeUp}>
           <ActivityList activities={recentActivities} maxItems={5} showViewAll />
         </motion.div>

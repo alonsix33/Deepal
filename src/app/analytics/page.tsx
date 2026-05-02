@@ -29,12 +29,13 @@ import {
   Legend,
 } from "recharts";
 
+// MD3 palette colors for charts
 const COLORS = {
-  cyan: "#00D4FF",
-  warning: "#FFA500",
-  blue: "#0095FF",
-  teal: "#00CED1",
-  gray: "#8A8A8A",
+  cyan: "#0057CC",    // --md-primary
+  warning: "#8B4800", // --color-fuel
+  blue: "#4F5F7A",    // --md-secondary
+  teal: "#006C51",    // --md-tertiary
+  gray: "#717B89",    // --md-outline
 };
 
 export default function AnalyticsPage() {

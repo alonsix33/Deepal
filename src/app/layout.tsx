@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/components/providers/StoreProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -10,9 +11,10 @@ const inter = Inter({
   preload: true,
 });
 
-const playfair = Playfair_Display({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-playfair",
+  variable: "--font-space-grotesk",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
   preload: true,
 });
@@ -24,7 +26,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "Deepal S05",
     startupImage: "/icons/icon.svg",
   },
@@ -44,7 +46,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#00D4FF",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F7F9FD" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F1317" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -58,9 +63,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="dark">
-      <body className={`${inter.variable} ${playfair.variable} antialiased`}>
-        <StoreProvider>{children}</StoreProvider>
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        {/* Space Grotesk is loaded via next/font — this preloads the variable font */}
+        <style>{`
+          :root { --font-display: "Space Grotesk", system-ui, sans-serif; }
+        `}</style>
+      </head>
+      <body
+        className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}
+        style={{ fontFamily: "var(--font-inter, Inter, system-ui, sans-serif)" }}
+      >
+        <StoreProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </StoreProvider>
       </body>
     </html>
   );

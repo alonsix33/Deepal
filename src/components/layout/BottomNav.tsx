@@ -23,39 +23,59 @@ export function BottomNav() {
   const router = useRouter();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-      <div className="relative">
-        <div className="absolute inset-0 bg-[var(--black)]/90 backdrop-blur-2xl border-t border-[var(--card-border)]" />
-        <div className="relative flex items-center justify-around px-2 pt-1 pb-1">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
+      <div
+        style={{
+          background: "var(--md-surface-container)",
+          borderTop: "1px solid var(--md-outline-variant)",
+        }}
+      >
+        <div className="flex items-center justify-around px-2 pt-1 pb-2 max-w-lg mx-auto">
           {tabs.map((tab) => {
             const isActive = pathname === tab.href;
             const Icon = tab.icon;
+
             return (
               <button
                 key={tab.href}
                 onClick={() => router.push(tab.href)}
                 className="relative flex flex-col items-center justify-center gap-0.5 px-3 py-1 min-w-[60px]"
+                aria-label={tab.label}
+                aria-current={isActive ? "page" : undefined}
               >
+                {/* MD3 active indicator — pill behind icon */}
                 {isActive && (
                   <motion.div
-                    layoutId="nav-active"
-                    className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-[var(--deepal-cyan)]"
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    layoutId="nav-indicator"
+                    className="absolute top-0.5 left-1/2 -translate-x-1/2 w-14 h-7 rounded-full"
+                    style={{ background: "var(--md-secondary-container)" }}
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
                   />
                 )}
-                <Icon
-                  className={`w-5 h-5 transition-colors ${
-                    isActive
-                      ? "text-[var(--deepal-cyan)]"
-                      : "text-[var(--text-tertiary)]"
-                  }`}
-                />
+
+                <span className="relative z-10">
+                  <Icon
+                    className="w-5 h-5 transition-colors"
+                    style={{
+                      color: isActive
+                        ? "var(--md-on-secondary-container)"
+                        : "var(--md-on-surface-variant)",
+                    }}
+                  />
+                </span>
+
                 <span
-                  className={`text-[10px] font-medium transition-colors ${
-                    isActive
-                      ? "text-[var(--text-primary)]"
-                      : "text-[var(--text-tertiary)]"
-                  }`}
+                  className="relative z-10 transition-colors"
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: isActive ? 600 : 500,
+                    color: isActive
+                      ? "var(--md-on-surface)"
+                      : "var(--md-on-surface-variant)",
+                  }}
                 >
                   {tab.label}
                 </span>
