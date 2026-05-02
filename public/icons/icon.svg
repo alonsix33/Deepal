@@ -1,30 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0A0A0A"/>
-      <stop offset="100%" stop-color="#121212"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1976D2"/>
+      <stop offset="100%" stop-color="#0D47A1"/>
     </linearGradient>
-    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#00D4FF"/>
-      <stop offset="100%" stop-color="#0095FF"/>
-    </linearGradient>
+    <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <rect x="48" y="48" width="416" height="416" rx="80" fill="none" stroke="url(#cyan)" stroke-width="4"/>
-  <!-- Car body -->
-  <path d="M128 280 L160 200 L352 200 L384 280 L400 300 L400 340 L112 340 L112 300 Z" fill="url(#cyan)" opacity="0.9"/>
-  <!-- Car roof/cabin -->
-  <path d="M180 200 L200 150 L340 150 L360 200" fill="#00D4FF" opacity="0.7"/>
-  <!-- Headlights -->
-  <circle cx="150" cy="290" r="12" fill="#00D4FF"/>
-  <circle cx="150" cy="290" r="6" fill="#FFFFFF"/>
-  <!-- Taillights -->
-  <circle cx="370" cy="290" r="10" fill="#FF4444"/>
-  <!-- Wheels -->
-  <circle cx="180" cy="350" r="28" fill="#1A1A1A" stroke="#00D4FF" stroke-width="3"/>
-  <circle cx="180" cy="350" r="12" fill="#2A2A2A"/>
-  <circle cx="340" cy="350" r="28" fill="#1A1A1A" stroke="#00D4FF" stroke-width="3"/>
-  <circle cx="340" cy="350" r="12" fill="#2A2A2A"/>
-  <!-- Lightning bolt -->
-  <path d="M260 180 L230 260 L260 260 L245 340 L290 250 L260 250 Z" fill="#FFD700"/>
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="114" fill="url(#bg)"/>
+  <!-- Bold geometric lightning bolt, centered at 256,256 -->
+  <!-- Bolt spans x:168-335, y:85-425 — centered at ~251,255 -->
+  <path d="M308 85 L185 278 H252 L168 425 L335 232 H268 Z"
+        fill="white" opacity="0.97" filter="url(#glow)"/>
 </svg>
