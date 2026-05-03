@@ -13,13 +13,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Guard: skip if charges already exist
-  const existing = await prisma.charge.count();
-  if (existing > 0) {
+  // Guard: skip if historical seed was already run (checks for the first historical charge)
+  const alreadySeeded = await prisma.charge.findFirst({
+    where: { date: new Date("2026-02-21T16:00:00Z") },
+  });
+  if (alreadySeeded) {
     return NextResponse.json({
       skipped: true,
-      message: `Ya existen ${existing} cargas. No se insertó nada.`,
-      existing,
+      message: "El seed histórico ya fue ejecutado anteriormente.",
     });
   }
 
