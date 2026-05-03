@@ -10,7 +10,7 @@ import {
   Plus,
   Fuel,
   Search,
-  Trash2,
+  Pencil,
   Calendar,
   Gauge,
   Info,
@@ -18,7 +18,7 @@ import {
 import Link from "next/link";
 
 export default function FuelPage() {
-  const { fuelUps, deleteFuelUp } = useStore();
+  const { fuelUps } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredFuelUps = fuelUps
@@ -192,15 +192,12 @@ export default function FuelPage() {
                     <p className="text-[10px]" style={{ color: "var(--md-on-surface-variant)" }}>
                       {formatCurrency(fuelUp.costPerGallon)}/gal
                     </p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="mt-1 h-7 w-7"
-                      style={{ color: "var(--md-error)" } as React.CSSProperties}
-                      onClick={() => deleteFuelUp(fuelUp.id)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                    <Link href={`/fuel/${fuelUp.id}/edit`}>
+                      <Button variant="ghost" size="icon" className="mt-1 h-7 w-7"
+                        style={{ color: "var(--md-on-surface-variant)" } as React.CSSProperties}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>

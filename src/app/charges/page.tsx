@@ -19,13 +19,13 @@ import {
   Zap,
   Search,
   Filter,
-  Trash2,
+  Pencil,
   Calendar,
 } from "lucide-react";
 import Link from "next/link";
 
 export default function ChargesPage() {
-  const { charges, deleteCharge } = useStore();
+  const { charges } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
 
@@ -210,15 +210,12 @@ export default function ChargesPage() {
                     <p className="text-xs font-semibold" style={{ color: "var(--md-primary)" }}>
                       {formatCurrency(charge.totalCost)}
                     </p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="mt-1 h-7 w-7"
-                      style={{ color: "var(--md-error)" } as React.CSSProperties}
-                      onClick={() => deleteCharge(charge.id)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                    <Link href={`/charges/${charge.id}/edit`}>
+                      <Button variant="ghost" size="icon" className="mt-1 h-7 w-7"
+                        style={{ color: "var(--md-on-surface-variant)" } as React.CSSProperties}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>
