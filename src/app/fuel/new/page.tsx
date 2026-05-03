@@ -101,6 +101,8 @@ export default function NewFuelPage() {
 
   const inputBase: React.CSSProperties = {
     width: "100%",
+    minWidth: 0,
+    maxWidth: "100%",
     height: "3.5rem",
     padding: "0 1rem",
     borderRadius: "var(--shape-sm)",
@@ -177,7 +179,7 @@ export default function NewFuelPage() {
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* Date + Odometer */}
           <div
-            className="rounded-[var(--shape-xl)] p-5 space-y-4"
+            className="rounded-[var(--shape-xl)] p-5 space-y-4 overflow-hidden"
             style={{ background: "var(--md-surface-container)" }}
           >
             <div className="flex items-center gap-2 mb-1">

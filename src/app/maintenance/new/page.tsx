@@ -57,6 +57,8 @@ export default function NewMaintenancePage() {
 
   const inputBase: React.CSSProperties = {
     width: "100%",
+    minWidth: 0,
+    maxWidth: "100%",
     height: "3.5rem",
     padding: "0 1rem",
     borderRadius: "var(--shape-sm)",
@@ -126,7 +128,7 @@ export default function NewMaintenancePage() {
 
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* Date + Odometer */}
-          <div className={sectionCard} style={sectionBg}>
+          <div className={sectionCard + " overflow-hidden"} style={sectionBg}>
             <div className="flex items-center gap-2 mb-1">
               <Gauge className="w-4 h-4" style={{ color: "var(--md-primary)" }} />
               <span
