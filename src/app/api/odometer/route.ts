@@ -47,6 +47,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    if (!data.odometer || data.odometer <= 0) {
+      return NextResponse.json({ error: "El odómetro debe ser mayor a 0" }, { status: 400 });
+    }
+
     const log = await prisma.odometerLog.create({
       data: {
         vehicleId: vehicle.id,
