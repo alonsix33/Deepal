@@ -709,6 +709,7 @@ export const useStore = create<AppState>()(
     }),
     {
       name: "deepal-s05-storage",
+      version: 2, // Bump to discard old cached state (was persisting isInitialized: true)
       // Never persist isInitialized — forces a fresh API fetch on every page load
       // so the UI always reflects the latest DB state.
       partialize: (state) => ({
