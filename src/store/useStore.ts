@@ -6,6 +6,7 @@ import type {
   Vehicle,
   Charge,
   FuelUp,
+  OdometerLog,
   Service,
   Trip,
   Settings,
@@ -18,6 +19,7 @@ import {
   fuelUpsAPI,
   servicesAPI,
   settingsAPI,
+  odometerAPI,
   type ChargeCreateData,
   type FuelUpCreateData,
   type ServiceCreateData,
@@ -67,6 +69,10 @@ interface AppState {
   updateServiceAsync: (id: string, service: Partial<Service>) => Promise<void>;
   deleteService: (id: string) => void;
   deleteServiceAsync: (id: string) => Promise<void>;
+
+  // Odometer Logs
+  odometerLogs: OdometerLog[];
+  addOdometerLogAsync: (data: { date: string; odometer: number; notes?: string }) => Promise<void>;
 
   // Trips (local only - no API)
   trips: Trip[];
@@ -127,13 +133,14 @@ export const useStore = create<AppState>()(
 
         try {
           // Fetch all data in parallel
-          const [vehicleData, chargesData, fuelUpsData, servicesData, settingsData] =
+          const [vehicleData, chargesData, fuelUpsData, servicesData, settingsData, odometerLogsData] =
             await Promise.all([
               vehicleAPI.get().catch(() => null),
               chargesAPI.getAll().catch(() => []),
               fuelUpsAPI.getAll().catch(() => []),
               servicesAPI.getAll().catch(() => []),
               settingsAPI.get().catch(() => null),
+              odometerAPI.getAll().catch(() => []),
             ]);
 
           // Transform API data to match local types
@@ -186,6 +193,16 @@ export const useStore = create<AppState>()(
             updatedAt: s.updatedAt,
           }));
 
+          const odometerLogs: OdometerLog[] = odometerLogsData.map((l: { id: string; vehicleId: string; date: string; odometer: number; batteryLevel?: number; notes?: string; createdAt: string }) => ({
+            id: l.id,
+            vehicleId: l.vehicleId,
+            date: l.date.split("T")[0],
+            odometer: l.odometer,
+            batteryLevel: l.batteryLevel,
+            notes: l.notes,
+            createdAt: l.createdAt,
+          }));
+
           set({
             vehicle: vehicleData
               ? {
@@ -205,6 +222,7 @@ export const useStore = create<AppState>()(
             charges,
             fuelUps,
             services,
+            odometerLogs,
             settings: settingsData
               ? {
                   id: settingsData.id,
@@ -600,6 +618,36 @@ export const useStore = create<AppState>()(
         }
       },
 
+      // Odometer Logs
+      odometerLogs: [],
+      addOdometerLogAsync: async (data) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await odometerAPI.create(data);
+          const newLog: OdometerLog = {
+            id: response.id,
+            vehicleId: response.vehicleId,
+            date: response.date.split("T")[0],
+            odometer: response.odometer,
+            batteryLevel: response.batteryLevel,
+            notes: response.notes,
+            createdAt: response.createdAt,
+          };
+          set((state) => ({
+            odometerLogs: [newLog, ...state.odometerLogs],
+            vehicle: {
+              ...state.vehicle,
+              currentOdometer: Math.max(state.vehicle.currentOdometer, data.odometer),
+            },
+            isLoading: false,
+          }));
+        } catch (error) {
+          console.error("Error adding odometer log:", error);
+          set({ error: "Error al registrar odómetro", isLoading: false });
+          throw error;
+        }
+      },
+
       // Trips (local only)
       trips: [],
       addTrip: (trip) =>
@@ -709,14 +757,13 @@ export const useStore = create<AppState>()(
     }),
     {
       name: "deepal-s05-storage",
-      version: 2, // Bump to discard old cached state (was persisting isInitialized: true)
-      // Never persist isInitialized — forces a fresh API fetch on every page load
-      // so the UI always reflects the latest DB state.
+      version: 3,
       partialize: (state) => ({
         vehicle: state.vehicle,
         charges: state.charges,
         fuelUps: state.fuelUps,
         services: state.services,
+        odometerLogs: state.odometerLogs,
         trips: state.trips,
         settings: state.settings,
       }),

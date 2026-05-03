@@ -1,4 +1,4 @@
-import type { Charge, FuelUp, Service, Vehicle } from "@/types";
+import type { Charge, FuelUp, OdometerLog, Service, Vehicle } from "@/types";
 
 export interface ServiceProjection {
   nextServiceKm: number;
@@ -73,7 +73,8 @@ export function computeServiceProjection(
   vehicle: Vehicle,
   charges: Charge[],
   fuelUps: FuelUp[],
-  services: Service[]
+  services: Service[],
+  odometerLogs?: OdometerLog[]
 ): ServiceProjection {
   const current = vehicle.currentOdometer;
   const nextServiceKm = getNextServiceMilestone(current);
@@ -96,6 +97,13 @@ export function computeServiceProjection(
   for (const s of services) {
     if (s.odometer > 0) {
       events.push({ date: new Date(s.date), odometer: s.odometer });
+    }
+  }
+  if (odometerLogs) {
+    for (const l of odometerLogs) {
+      if (l.odometer > 0) {
+        events.push({ date: new Date(l.date), odometer: l.odometer });
+      }
     }
   }
 
