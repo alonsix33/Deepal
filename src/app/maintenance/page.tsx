@@ -57,7 +57,7 @@ const CONFIDENCE_CONFIG = {
 };
 
 export default function MaintenancePage() {
-  const { services, vehicle, charges, fuelUps } = useStore();
+  const { services, vehicle, charges, fuelUps, odometerLogs } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredServices = services
@@ -71,7 +71,7 @@ export default function MaintenancePage() {
 
   const totalCost = services.reduce((sum, s) => sum + s.costPEN, 0);
 
-  const proj = computeServiceProjection(vehicle, charges, fuelUps, services);
+  const proj = computeServiceProjection(vehicle, charges, fuelUps, services, odometerLogs);
   const conf = CONFIDENCE_CONFIG[proj.confidence];
 
   // Milestones up to 20k beyond current (show relevant upcoming ones)

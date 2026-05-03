@@ -38,7 +38,7 @@ import {
   Upload,
   Trash2,
   Info,
-  Car,
+  Gauge,
   Bell,
   BellOff,
   FileSpreadsheet,
@@ -49,19 +49,31 @@ import {
   Sun,
   Moon,
   Monitor,
+  Plus,
+  Fuel,
+  Wrench,
 } from "lucide-react";
 
 export default function SettingsPage() {
   const {
     settings,
     updateSettings,
-    updateSettingsAsync,
     vehicle,
-    updateVehicle,
-    updateVehicleAsync,
+    charges,
+    fuelUps,
+    services,
+    odometerLogs,
+    addOdometerLogAsync,
     initializeFromAPI,
   } = useStore();
   const [showResetDialog, setShowResetDialog] = useState(false);
+  const [odometerForm, setOdometerForm] = useState({
+    date: new Date().toISOString().split("T")[0],
+    odometer: "",
+    notes: "",
+  });
+  const [isAddingOdometer, setIsAddingOdometer] = useState(false);
+  const [odometerError, setOdometerError] = useState<string | null>(null);
   const [notificationStatus, setNotificationStatus] = useState<"loading" | "enabled" | "disabled" | "denied">("loading");
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -183,6 +195,26 @@ export default function SettingsPage() {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
+    }
+  };
+
+  const handleAddOdometer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const km = parseInt(odometerForm.odometer);
+    if (!km || km <= 0) return;
+    setIsAddingOdometer(true);
+    setOdometerError(null);
+    try {
+      await addOdometerLogAsync({
+        date: `${odometerForm.date}T12:00:00`,
+        odometer: km,
+        notes: odometerForm.notes || undefined,
+      });
+      setOdometerForm((prev) => ({ ...prev, odometer: "", notes: "" }));
+    } catch {
+      setOdometerError("Error al guardar. Intenta de nuevo.");
+    } finally {
+      setIsAddingOdometer(false);
     }
   };
 
@@ -340,44 +372,135 @@ export default function SettingsPage() {
           </div>
         </GlassCard>
 
-        {/* Vehicle Settings */}
-        <GlassCard role="region" aria-labelledby="vehicle-heading">
-          <h2 id="vehicle-heading" className="font-semibold mb-4 flex items-center gap-2">
-            <Car className="w-5 h-5 text-[var(--deepal-blue)]" aria-hidden="true" />
-            Vehículo
-          </h2>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentOdometer">Kilometraje Actual</Label>
-              <Input
-                id="currentOdometer"
-                type="number"
-                min="0"
-                inputMode="numeric"
-                value={vehicle.currentOdometer}
-                onChange={(e) =>
-                  updateVehicle({
-                    currentOdometer: parseInt(e.target.value) || 0,
-                  })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="odometerStart">Kilometraje Inicial</Label>
-              <Input
-                id="odometerStart"
-                type="number"
-                min="0"
-                inputMode="numeric"
-                value={vehicle.odometerStart}
-                onChange={(e) =>
-                  updateVehicle({
-                    odometerStart: parseInt(e.target.value) || 0,
-                  })
-                }
-              />
+        {/* Odometer Log */}
+        <GlassCard role="region" aria-labelledby="odometer-heading">
+          <div className="flex items-center justify-between mb-4">
+            <h2 id="odometer-heading" className="font-semibold flex items-center gap-2">
+              <Gauge className="w-5 h-5" style={{ color: "var(--md-primary)" }} aria-hidden="true" />
+              Odómetro
+            </h2>
+            <div className="text-right">
+              <p className="text-xl font-bold" style={{ color: "var(--md-on-surface)", fontFamily: "var(--font-display, system-ui)" }}>
+                {vehicle.currentOdometer.toLocaleString("es-PE")} km
+              </p>
+              <p className="text-[10px]" style={{ color: "var(--md-on-surface-variant)" }}>actual</p>
             </div>
           </div>
+
+          {/* Add new log form */}
+          <form onSubmit={handleAddOdometer} className="mb-4">
+            <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--md-on-surface-variant)" }}>
+              Agregar lectura manual
+            </p>
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <div className="space-y-1">
+                <Label className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>Fecha</Label>
+                <Input
+                  type="date"
+                  value={odometerForm.date}
+                  onChange={(e) => setOdometerForm((p) => ({ ...p, date: e.target.value }))}
+                  required
+                  disabled={isAddingOdometer}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>Km</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  inputMode="numeric"
+                  placeholder="Ej: 3500"
+                  value={odometerForm.odometer}
+                  onChange={(e) => setOdometerForm((p) => ({ ...p, odometer: e.target.value }))}
+                  required
+                  disabled={isAddingOdometer}
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Notas (opcional)"
+                value={odometerForm.notes}
+                onChange={(e) => setOdometerForm((p) => ({ ...p, notes: e.target.value }))}
+                disabled={isAddingOdometer}
+                className="flex-1 text-sm"
+              />
+              <Button type="submit" variant="filled" size="sm" className="gap-1.5 shrink-0" disabled={isAddingOdometer || !odometerForm.odometer}>
+                {isAddingOdometer ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                Guardar
+              </Button>
+            </div>
+            {odometerError && (
+              <p className="text-xs mt-2" style={{ color: "var(--md-error)" }}>{odometerError}</p>
+            )}
+          </form>
+
+          {/* Combined log list */}
+          {(() => {
+            type Entry = { date: string; odometer: number; source: "manual" | "charge" | "fuel" | "service"; notes?: string | null };
+            const entries: Entry[] = [
+              ...odometerLogs.map((l) => ({ date: l.date, odometer: l.odometer, source: "manual" as const, notes: l.notes })),
+              ...charges.filter((c) => c.odometerEnd && c.odometerEnd > 0).map((c) => ({ date: c.date, odometer: c.odometerEnd!, source: "charge" as const, notes: c.location })),
+              ...fuelUps.filter((f) => f.odometer > 0).map((f) => ({ date: f.date, odometer: f.odometer, source: "fuel" as const, notes: f.location })),
+              ...services.filter((s) => s.odometer > 0).map((s) => ({ date: s.date, odometer: s.odometer, source: "service" as const, notes: s.serviceType })),
+            ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+            const sourceCfg = {
+              manual: { label: "Manual", bg: "var(--md-primary-container)", color: "var(--md-on-primary-container)" },
+              charge: { label: "Carga", bg: "var(--md-primary-container)", color: "var(--md-on-primary-container)" },
+              fuel: { label: "Combustible", bg: "var(--color-fuel-container)", color: "var(--color-fuel)" },
+              service: { label: "Servicio", bg: "var(--color-service-container)", color: "var(--color-service)" },
+            };
+
+            const sourceIcon = { manual: Gauge, charge: Gauge, fuel: Fuel, service: Wrench };
+
+            if (entries.length === 0) {
+              return (
+                <p className="text-sm text-center py-4" style={{ color: "var(--md-on-surface-variant)" }}>
+                  Sin registros aún. Agrega lecturas o ingresa odómetro en tus cargas.
+                </p>
+              );
+            }
+
+            return (
+              <div className="space-y-0 border rounded-[var(--shape-md)] overflow-hidden" style={{ borderColor: "var(--md-outline-variant)" }}>
+                {entries.map((entry, i) => {
+                  const cfg = sourceCfg[entry.source];
+                  const Icon = sourceIcon[entry.source];
+                  return (
+                    <div
+                      key={`${entry.source}-${entry.date}-${entry.odometer}-${i}`}
+                      className="flex items-center gap-3 px-3 py-2.5"
+                      style={{
+                        borderBottom: i < entries.length - 1 ? "1px solid var(--md-outline-variant)" : undefined,
+                        background: i % 2 === 0 ? "transparent" : "var(--md-surface-container)",
+                      }}
+                    >
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ background: cfg.bg }}>
+                        <Icon className="w-3.5 h-3.5" style={{ color: cfg.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold" style={{ color: "var(--md-on-surface)" }}>
+                          {entry.odometer.toLocaleString("es-PE")} km
+                        </p>
+                        {entry.notes && (
+                          <p className="text-[10px] truncate" style={{ color: "var(--md-on-surface-variant)" }}>{entry.notes}</p>
+                        )}
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: cfg.bg, color: cfg.color }}>
+                          {cfg.label}
+                        </span>
+                        <p className="text-[10px] mt-0.5" style={{ color: "var(--md-on-surface-variant)" }}>
+                          {new Date(entry.date).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </GlassCard>
 
         {/* Language and Units */}

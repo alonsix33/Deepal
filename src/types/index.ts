@@ -61,6 +61,16 @@ export interface Service {
   updatedAt: string;
 }
 
+export interface OdometerLog {
+  id: string;
+  vehicleId: string;
+  date: string;
+  odometer: number;
+  batteryLevel?: number | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
 export interface Trip {
   id: string;
   vehicleId: string;
