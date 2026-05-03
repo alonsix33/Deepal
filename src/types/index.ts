@@ -101,6 +101,7 @@ export type ChargeLocation =
   | "home"
   | "jockey_plaza"
   | "larcomar"
+  | "la_rambla"
   | "real_plaza"
   | "other";
 
@@ -108,6 +109,7 @@ export const CHARGE_LOCATIONS: Record<ChargeLocation, string> = {
   home: "Casa",
   jockey_plaza: "Jockey Plaza",
   larcomar: "Larcomar",
+  la_rambla: "La Rambla San Borja",
   real_plaza: "Real Plaza Salaverry",
   other: "Otro",
 };
