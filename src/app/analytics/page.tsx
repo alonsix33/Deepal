@@ -2,8 +2,6 @@
 
 import React, { useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { GlassCard } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStore } from "@/store/useStore";
 import { formatCurrency, formatKwh } from "@/lib/utils";
 import {
@@ -28,21 +26,75 @@ import {
   Line,
   Legend,
 } from "recharts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// MD3 palette colors for charts
-const COLORS = {
-  cyan: "#0057CC",    // --md-primary
-  warning: "#8B4800", // --color-fuel
-  blue: "#4F5F7A",    // --md-secondary
-  teal: "#006C51",    // --md-tertiary
-  gray: "#717B89",    // --md-outline
+// MD3 palette — usar valores de CSS vars resueltos en hex para Recharts
+// (Recharts no puede leer CSS variables directamente)
+const CHART_COLORS = {
+  primary: "#0057CC",
+  fuel: "#8B4800",
+  secondary: "#4F5F7A",
+  tertiary: "#006C51",
+  outline: "#717B89",
 };
+
+const CHART_COLORS_DARK = {
+  primary: "#A8C8FF",
+  fuel: "#FFB870",
+  secondary: "#B9C7E0",
+  tertiary: "#6BDBB1",
+  outline: "#8B96A2",
+};
+
+function useChartColors() {
+  if (typeof document !== "undefined") {
+    const isDark = document.documentElement.classList.contains("dark");
+    return isDark ? CHART_COLORS_DARK : CHART_COLORS;
+  }
+  return CHART_COLORS;
+}
+
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color: string }>;
+  label?: string;
+  formatter?: (v: number) => string;
+}
+
+function MD3Tooltip({ active, payload, label, formatter }: TooltipProps) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div
+      className="rounded-[var(--shape-md)] px-3 py-2.5 text-xs shadow-lg"
+      style={{
+        background: "var(--md-surface-container-highest)",
+        border: "1px solid var(--md-outline-variant)",
+        color: "var(--md-on-surface)",
+      }}
+    >
+      {label && (
+        <p className="font-semibold mb-1" style={{ color: "var(--md-on-surface-variant)" }}>
+          {label}
+        </p>
+      )}
+      {payload.map((entry) => (
+        <div key={entry.name} className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full" style={{ background: entry.color }} />
+          <span style={{ color: "var(--md-on-surface-variant)" }}>{entry.name}: </span>
+          <span className="font-medium">
+            {formatter ? formatter(entry.value) : entry.value}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function AnalyticsPage() {
   const { charges, fuelUps, services, getDashboardStats } = useStore();
   const stats = getDashboardStats();
+  const colors = useChartColors();
 
-  // Calculate monthly data
   const monthlyData = useMemo(() => {
     const months: Record<
       string,
@@ -54,9 +106,7 @@ export default function AnalyticsPage() {
         month: "short",
         year: "2-digit",
       });
-      if (!months[month]) {
-        months[month] = { month, electric: 0, fuel: 0, maintenance: 0 };
-      }
+      if (!months[month]) months[month] = { month, electric: 0, fuel: 0, maintenance: 0 };
       months[month].electric += charge.totalCost;
     });
 
@@ -65,9 +115,7 @@ export default function AnalyticsPage() {
         month: "short",
         year: "2-digit",
       });
-      if (!months[month]) {
-        months[month] = { month, electric: 0, fuel: 0, maintenance: 0 };
-      }
+      if (!months[month]) months[month] = { month, electric: 0, fuel: 0, maintenance: 0 };
       months[month].fuel += fuelUp.costPEN;
     });
 
@@ -76,354 +124,312 @@ export default function AnalyticsPage() {
         month: "short",
         year: "2-digit",
       });
-      if (!months[month]) {
-        months[month] = { month, electric: 0, fuel: 0, maintenance: 0 };
-      }
+      if (!months[month]) months[month] = { month, electric: 0, fuel: 0, maintenance: 0 };
       months[month].maintenance += service.costPEN;
     });
 
-    return Object.values(months).sort((a, b) => {
-      const dateA = new Date(a.month);
-      const dateB = new Date(b.month);
-      return dateA.getTime() - dateB.getTime();
-    });
+    return Object.values(months).sort(
+      (a, b) => new Date("1 " + a.month).getTime() - new Date("1 " + b.month).getTime()
+    );
   }, [charges, fuelUps, services]);
 
-  // Usage distribution data
   const usageData = useMemo(() => {
     const totalElectric = charges.reduce((sum, c) => sum + c.totalCost, 0);
     const totalFuel = fuelUps.reduce((sum, f) => sum + f.costPEN, 0);
-
     if (totalElectric === 0 && totalFuel === 0) {
-      return [{ name: "Sin datos", value: 100, color: COLORS.gray }];
+      return [{ name: "Sin datos", value: 100, color: colors.outline }];
     }
-
     return [
-      { name: "Eléctrico", value: totalElectric, color: COLORS.cyan },
-      { name: "Combustible", value: totalFuel, color: COLORS.warning },
+      { name: "Eléctrico", value: totalElectric, color: colors.primary },
+      { name: "Combustible", value: totalFuel, color: colors.fuel },
     ].filter((d) => d.value > 0);
-  }, [charges, fuelUps]);
+  }, [charges, fuelUps, colors]);
 
-  // kWh charged per month
   const kwhData = useMemo(() => {
     const months: Record<string, { month: string; kwh: number }> = {};
-
     charges.forEach((charge) => {
-      const month = new Date(charge.date).toLocaleDateString("es-PE", {
-        month: "short",
-      });
-      if (!months[month]) {
-        months[month] = { month, kwh: 0 };
-      }
+      const month = new Date(charge.date).toLocaleDateString("es-PE", { month: "short" });
+      if (!months[month]) months[month] = { month, kwh: 0 };
       months[month].kwh += charge.kwhCharged;
     });
-
     return Object.values(months);
   }, [charges]);
 
-  // Charging locations breakdown
   const locationData = useMemo(() => {
     const locations: Record<string, number> = {};
-
     charges.forEach((charge) => {
-      const loc = charge.location;
-      locations[loc] = (locations[loc] || 0) + 1;
+      locations[charge.location] = (locations[charge.location] || 0) + 1;
     });
-
+    const palette = [colors.primary, colors.fuel, colors.secondary, colors.tertiary, colors.outline];
     return Object.entries(locations)
-      .map(([name, value], index) => ({
-        name,
-        value,
-        color: Object.values(COLORS)[index % Object.values(COLORS).length],
-      }))
+      .map(([name, value], i) => ({ name, value, color: palette[i % palette.length] }))
       .sort((a, b) => b.value - a.value);
-  }, [charges]);
+  }, [charges, colors]);
 
   const hasData = charges.length > 0 || fuelUps.length > 0;
 
+  const axisStyle = { fill: "var(--md-on-surface-variant)", fontSize: 11 };
+
+  const summaryCards = [
+    {
+      label: "Costo Eléctrico",
+      value: formatCurrency(stats.totalChargeCost),
+      icon: Zap,
+      iconBg: "var(--md-primary-container)",
+      iconColor: "var(--md-on-primary-container)",
+    },
+    {
+      label: "Costo Combustible",
+      value: formatCurrency(stats.totalFuelCost),
+      icon: Fuel,
+      iconBg: "var(--color-fuel-container)",
+      iconColor: "var(--color-fuel)",
+    },
+    {
+      label: "Costo/km",
+      value: formatCurrency(stats.averageCostPerKm),
+      icon: TrendingUp,
+      iconBg: "var(--md-secondary-container)",
+      iconColor: "var(--md-on-secondary-container)",
+    },
+    {
+      label: "Uso Eléctrico",
+      value: `${Math.round(stats.electricUsagePercent)}%`,
+      icon: PieChartIcon,
+      iconBg: "var(--md-tertiary-container)",
+      iconColor: "var(--md-on-tertiary-container)",
+    },
+  ];
+
   return (
     <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold">Estadísticas</h1>
-          <p className="text-[var(--muted-foreground)]">
+      <div className="space-y-4 pb-4">
+        {/* Page title */}
+        <div className="pt-1">
+          <h1
+            className="text-2xl font-bold"
+            style={{
+              color: "var(--md-on-surface)",
+              fontFamily: "var(--font-display, 'Space Grotesk', system-ui)",
+            }}
+          >
+            Estadísticas
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: "var(--md-on-surface-variant)" }}>
             Análisis de consumo y costos
           </p>
         </div>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <GlassCard>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[var(--deepal-cyan)]/10">
-                <Zap className="w-5 h-5 text-[var(--deepal-cyan)]" />
-              </div>
-              <div>
-                <p className="text-sm text-[var(--muted-foreground)]">
-                  Costo Eléctrico
+        {/* Summary strip */}
+        <div className="grid grid-cols-2 gap-3">
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <div key={card.label} className="card-outlined p-4">
+                <div
+                  className="w-8 h-8 rounded-[var(--shape-sm)] flex items-center justify-center mb-3"
+                  style={{ background: card.iconBg, color: card.iconColor }}
+                >
+                  <Icon className="w-4 h-4" />
+                </div>
+                <p
+                  className="text-xl font-bold tracking-tight"
+                  style={{ color: "var(--md-on-surface)" }}
+                >
+                  {card.value}
                 </p>
-                <p className="text-xl font-bold">
-                  {formatCurrency(stats.totalChargeCost)}
-                </p>
-              </div>
-            </div>
-          </GlassCard>
-          <GlassCard>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[var(--deepal-warning)]/10">
-                <Fuel className="w-5 h-5 text-[var(--deepal-warning)]" />
-              </div>
-              <div>
-                <p className="text-sm text-[var(--muted-foreground)]">
-                  Costo Combustible
-                </p>
-                <p className="text-xl font-bold">
-                  {formatCurrency(stats.totalFuelCost)}
+                <p className="text-[11px] mt-0.5" style={{ color: "var(--md-on-surface-variant)" }}>
+                  {card.label}
                 </p>
               </div>
-            </div>
-          </GlassCard>
-          <GlassCard>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[var(--deepal-blue)]/10">
-                <TrendingUp className="w-5 h-5 text-[var(--deepal-blue)]" />
-              </div>
-              <div>
-                <p className="text-sm text-[var(--muted-foreground)]">
-                  Costo/km
-                </p>
-                <p className="text-xl font-bold">
-                  {formatCurrency(stats.averageCostPerKm)}
-                </p>
-              </div>
-            </div>
-          </GlassCard>
-          <GlassCard>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[var(--deepal-teal)]/10">
-                <PieChartIcon className="w-5 h-5 text-[var(--deepal-teal)]" />
-              </div>
-              <div>
-                <p className="text-sm text-[var(--muted-foreground)]">
-                  Uso Eléctrico
-                </p>
-                <p className="text-xl font-bold">
-                  {Math.round(stats.electricUsagePercent)}%
-                </p>
-              </div>
-            </div>
-          </GlassCard>
+            );
+          })}
         </div>
 
         {!hasData ? (
-          <GlassCard className="text-center py-12">
-            <BarChart3 className="w-12 h-12 mx-auto text-[var(--muted-foreground)] mb-4" />
-            <p className="text-lg font-medium">No hay datos para mostrar</p>
-            <p className="text-[var(--muted-foreground)] mt-1">
+          <div className="card-outlined text-center py-14 px-6">
+            <div
+              className="w-14 h-14 rounded-full mx-auto flex items-center justify-center mb-4"
+              style={{ background: "var(--md-primary-container)" }}
+            >
+              <BarChart3 className="w-7 h-7" style={{ color: "var(--md-on-primary-container)" }} />
+            </div>
+            <p className="font-semibold text-base" style={{ color: "var(--md-on-surface)" }}>
+              No hay datos para mostrar
+            </p>
+            <p className="text-sm mt-1" style={{ color: "var(--md-on-surface-variant)" }}>
               Registra cargas y consumos para ver las estadísticas
             </p>
-          </GlassCard>
+          </div>
         ) : (
-          <Tabs defaultValue="costs" className="space-y-6">
-            <TabsList className="grid grid-cols-3 w-full max-w-md">
+          <Tabs defaultValue="costs" className="space-y-4">
+            <TabsList className="grid grid-cols-3 w-full">
               <TabsTrigger value="costs">Costos</TabsTrigger>
               <TabsTrigger value="usage">Uso</TabsTrigger>
               <TabsTrigger value="charging">Cargas</TabsTrigger>
             </TabsList>
 
-            {/* Costs Tab */}
-            <TabsContent value="costs" className="space-y-6">
-              <GlassCard>
-                <h3 className="font-semibold mb-4">Costos Mensuales</h3>
-                <div className="h-[300px]">
+            {/* Costos */}
+            <TabsContent value="costs" className="space-y-4">
+              <div className="card-filled p-4">
+                <h3
+                  className="font-semibold text-sm mb-4"
+                  style={{ color: "var(--md-on-surface)" }}
+                >
+                  Costos Mensuales
+                </h3>
+                <div className="h-[260px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={monthlyData}>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke="var(--border)"
-                      />
-                      <XAxis dataKey="month" stroke="var(--muted-foreground)" />
-                      <YAxis stroke="var(--muted-foreground)" />
+                    <BarChart data={monthlyData} margin={{ left: -10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--md-outline-variant)" />
+                      <XAxis dataKey="month" tick={axisStyle} />
+                      <YAxis tick={axisStyle} />
                       <Tooltip
-                        contentStyle={{
-                          backgroundColor: "var(--card)",
-                          border: "1px solid var(--border)",
-                          borderRadius: "8px",
-                        }}
-                        formatter={(value) => formatCurrency(Number(value) || 0)}
+                        content={<MD3Tooltip formatter={(v) => formatCurrency(v)} />}
                       />
-                      <Legend />
-                      <Bar
-                        dataKey="electric"
-                        name="Eléctrico"
-                        fill={COLORS.cyan}
-                        radius={[4, 4, 0, 0]}
+                      <Legend
+                        wrapperStyle={{ fontSize: 11, color: "var(--md-on-surface-variant)" }}
                       />
-                      <Bar
-                        dataKey="fuel"
-                        name="Combustible"
-                        fill={COLORS.warning}
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Bar
-                        dataKey="maintenance"
-                        name="Mantenimiento"
-                        fill={COLORS.blue}
-                        radius={[4, 4, 0, 0]}
-                      />
+                      <Bar dataKey="electric" name="Eléctrico" fill={colors.primary} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="fuel" name="Combustible" fill={colors.fuel} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="maintenance" name="Mantenimiento" fill={colors.secondary} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              </GlassCard>
-            </TabsContent>
-
-            {/* Usage Tab */}
-            <TabsContent value="usage" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <GlassCard>
-                  <h3 className="font-semibold mb-4">
-                    Distribución de Energía
-                  </h3>
-                  <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={usageData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={100}
-                          paddingAngle={5}
-                          dataKey="value"
-                        >
-                          {usageData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "var(--card)",
-                            border: "1px solid var(--border)",
-                            borderRadius: "8px",
-                          }}
-                          formatter={(value) => formatCurrency(Number(value) || 0)}
-                        />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </GlassCard>
-
-                <GlassCard>
-                  <h3 className="font-semibold mb-4">Ubicaciones de Carga</h3>
-                  <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={locationData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={100}
-                          paddingAngle={5}
-                          dataKey="value"
-                        >
-                          {locationData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "var(--card)",
-                            border: "1px solid var(--border)",
-                            borderRadius: "8px",
-                          }}
-                        />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </GlassCard>
               </div>
             </TabsContent>
 
-            {/* Charging Tab */}
-            <TabsContent value="charging" className="space-y-6">
-              <GlassCard>
-                <h3 className="font-semibold mb-4">kWh Cargados por Mes</h3>
-                <div className="h-[300px]">
+            {/* Uso */}
+            <TabsContent value="usage" className="space-y-4">
+              <div className="card-filled p-4">
+                <h3
+                  className="font-semibold text-sm mb-4"
+                  style={{ color: "var(--md-on-surface)" }}
+                >
+                  Distribución de Energía
+                </h3>
+                <div className="h-[240px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={kwhData}>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke="var(--border)"
-                      />
-                      <XAxis dataKey="month" stroke="var(--muted-foreground)" />
-                      <YAxis stroke="var(--muted-foreground)" />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "var(--card)",
-                          border: "1px solid var(--border)",
-                          borderRadius: "8px",
-                        }}
-                        formatter={(value) => formatKwh(Number(value) || 0)}
-                      />
+                    <PieChart>
+                      <Pie
+                        data={usageData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={95}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {usageData.map((entry, i) => (
+                          <Cell key={`cell-${i}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<MD3Tooltip formatter={(v) => formatCurrency(v)} />} />
+                      <Legend wrapperStyle={{ fontSize: 11, color: "var(--md-on-surface-variant)" }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="card-filled p-4">
+                <h3
+                  className="font-semibold text-sm mb-4"
+                  style={{ color: "var(--md-on-surface)" }}
+                >
+                  Ubicaciones de Carga
+                </h3>
+                <div className="h-[240px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={locationData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={95}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {locationData.map((entry, i) => (
+                          <Cell key={`cell-${i}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<MD3Tooltip />} />
+                      <Legend wrapperStyle={{ fontSize: 11, color: "var(--md-on-surface-variant)" }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Cargas */}
+            <TabsContent value="charging" className="space-y-4">
+              <div className="card-filled p-4">
+                <h3
+                  className="font-semibold text-sm mb-4"
+                  style={{ color: "var(--md-on-surface)" }}
+                >
+                  kWh Cargados por Mes
+                </h3>
+                <div className="h-[240px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={kwhData} margin={{ left: -10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--md-outline-variant)" />
+                      <XAxis dataKey="month" tick={axisStyle} />
+                      <YAxis tick={axisStyle} />
+                      <Tooltip content={<MD3Tooltip formatter={(v) => formatKwh(v)} />} />
                       <Line
                         type="monotone"
                         dataKey="kwh"
                         name="kWh"
-                        stroke={COLORS.cyan}
-                        strokeWidth={3}
-                        dot={{ fill: COLORS.cyan, r: 4 }}
-                        activeDot={{ r: 6 }}
+                        stroke={colors.primary}
+                        strokeWidth={2.5}
+                        dot={{ fill: colors.primary, r: 4, strokeWidth: 0 }}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-              </GlassCard>
+              </div>
 
-              {/* Charging Stats */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <GlassCard className="text-center">
-                  <p className="text-sm text-[var(--muted-foreground)]">
-                    Total Cargas
-                  </p>
-                  <p className="text-2xl font-bold">{charges.length}</p>
-                </GlassCard>
-                <GlassCard className="text-center">
-                  <p className="text-sm text-[var(--muted-foreground)]">
-                    Total kWh
-                  </p>
-                  <p className="text-2xl font-bold">
-                    {formatKwh(charges.reduce((s, c) => s + c.kwhCharged, 0))}
-                  </p>
-                </GlassCard>
-                <GlassCard className="text-center">
-                  <p className="text-sm text-[var(--muted-foreground)]">
-                    Costo Promedio
-                  </p>
-                  <p className="text-2xl font-bold">
-                    {formatCurrency(
+              {/* Charging stats strip */}
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Total cargas", value: String(charges.length) },
+                  {
+                    label: "Total kWh",
+                    value: formatKwh(charges.reduce((s, c) => s + c.kwhCharged, 0)),
+                  },
+                  {
+                    label: "Costo promedio",
+                    value: formatCurrency(
+                      charges.length > 0 ? stats.totalChargeCost / charges.length : 0
+                    ),
+                  },
+                  {
+                    label: "kWh promedio",
+                    value: formatKwh(
                       charges.length > 0
-                        ? stats.totalChargeCost / charges.length
+                        ? charges.reduce((s, c) => s + c.kwhCharged, 0) / charges.length
                         : 0
-                    )}
-                  </p>
-                </GlassCard>
-                <GlassCard className="text-center">
-                  <p className="text-sm text-[var(--muted-foreground)]">
-                    kWh Promedio
-                  </p>
-                  <p className="text-2xl font-bold">
-                    {formatKwh(
-                      charges.length > 0
-                        ? charges.reduce((s, c) => s + c.kwhCharged, 0) /
-                            charges.length
-                        : 0
-                    )}
-                  </p>
-                </GlassCard>
+                    ),
+                  },
+                ].map((s) => (
+                  <div key={s.label} className="card-outlined p-4 text-center">
+                    <p
+                      className="text-xl font-bold"
+                      style={{
+                        color: "var(--md-on-surface)",
+                        fontFamily: "var(--font-display, system-ui)",
+                      }}
+                    >
+                      {s.value}
+                    </p>
+                    <p className="text-[11px] mt-0.5" style={{ color: "var(--md-on-surface-variant)" }}>
+                      {s.label}
+                    </p>
+                  </div>
+                ))}
               </div>
             </TabsContent>
           </Tabs>

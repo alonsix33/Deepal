@@ -2,233 +2,279 @@
 
 import React from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { GlassCard } from "@/components/ui/card";
 import { useStore } from "@/store/useStore";
 import { formatDate, formatKm } from "@/lib/utils";
 import {
   Car,
   Zap,
-  Fuel,
   Battery,
-  Gauge,
-  Calendar,
-  Shield,
   Info,
+  Shield,
 } from "lucide-react";
+
+const specs = [
+  {
+    category: "Tren Motriz",
+    icon: Zap,
+    color: "var(--md-primary)",
+    bg: "var(--md-primary-container)",
+    items: [
+      { label: "Tipo", value: "REEV (Range Extended EV)" },
+      { label: "Motor Eléctrico", value: "214 HP (160 kW), 320 Nm" },
+      { label: "Generador", value: "1.5L 4-cil, 96 HP" },
+      { label: "Tracción", value: "RWD (Trasera)" },
+      { label: "Aceleración", value: "0–100 km/h en 7.9 s" },
+    ],
+  },
+  {
+    category: "Batería y Autonomía",
+    icon: Battery,
+    color: "var(--md-tertiary)",
+    bg: "var(--md-tertiary-container)",
+    items: [
+      { label: "Batería", value: "27.28 kWh LFP (CATL)" },
+      { label: "Autonomía eléctrica", value: "~125 km (real)" },
+      { label: "Autonomía total", value: "1,129 km" },
+      { label: "Tanque gasolina", value: "45–51 L" },
+    ],
+  },
+  {
+    category: "Carga",
+    icon: Zap,
+    color: "var(--color-electric)",
+    bg: "var(--color-electric-container)",
+    items: [
+      { label: "AC (Type 2)", value: "7 kW — 3.9 h (0–100%)" },
+      { label: "DC (CCS2)", value: "54.5 kW — 30 min (0–80%)" },
+      { label: "20–80% AC", value: "~2.3 horas" },
+      { label: "30–80% DC", value: "~20 minutos" },
+    ],
+  },
+  {
+    category: "Infotainment",
+    icon: Info,
+    color: "var(--md-secondary)",
+    bg: "var(--md-secondary-container)",
+    items: [
+      { label: "Sistema", value: "Deepal OS 3.0 (Huawei)" },
+      { label: "Chip", value: "Snapdragon 8155P" },
+      { label: "Pantalla", value: '15.4" 2.5K "Sunflower"' },
+      { label: "Audio", value: "8 parlantes" },
+      { label: "HUD", value: 'AR Head-Up Display 53"' },
+    ],
+  },
+];
+
+function SpecRow({ label, value, last }: { label: string; value: string; last?: boolean }) {
+  return (
+    <div
+      className="flex justify-between items-start py-2.5 gap-4"
+      style={
+        last
+          ? undefined
+          : { borderBottom: "1px solid var(--md-outline-variant)" }
+      }
+    >
+      <span className="text-sm" style={{ color: "var(--md-on-surface-variant)" }}>
+        {label}
+      </span>
+      <span
+        className="text-sm font-medium text-right max-w-[58%]"
+        style={{ color: "var(--md-on-surface)" }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
 
 export default function VehiclePage() {
   const { vehicle } = useStore();
 
-  const specs = [
-    {
-      category: "Tren Motriz",
-      icon: Zap,
-      items: [
-        { label: "Tipo", value: "REEV (Range Extended EV)" },
-        { label: "Motor Eléctrico", value: "214 HP (160 kW), 320 Nm" },
-        { label: "Generador", value: "1.5L 4-cil, 96 HP (solo genera electricidad)" },
-        { label: "Tracción", value: "RWD (Trasera)" },
-        { label: "Aceleración", value: "0-100 km/h en 7.9s" },
-      ],
-    },
-    {
-      category: "Batería y Autonomía",
-      icon: Battery,
-      items: [
-        { label: "Batería", value: "27.28 kWh LFP (CATL)" },
-        { label: "Autonomía Electrica", value: "~125 km (real)" },
-        { label: "Autonomía Total", value: "1,129 km" },
-        { label: "Tanque Gasolina", value: "45-51 L" },
-      ],
-    },
-    {
-      category: "Carga",
-      icon: Zap,
-      items: [
-        { label: "Carga AC", value: "7 kW (Type 2) - 3.9h 0-100%" },
-        { label: "Carga DC", value: "54.5 kW (CCS2) - 30min 0-80%" },
-        { label: "20-80% AC", value: "~2.3 horas" },
-        { label: "30-80% DC", value: "~20 minutos" },
-      ],
-    },
-    {
-      category: "Infotainment",
-      icon: Info,
-      items: [
-        { label: "Sistema", value: "Deepal OS 3.0 (Huawei)" },
-        { label: "Chip", value: "Qualcomm Snapdragon 8155P" },
-        { label: "Pantalla", value: '15.4" 2.5K "Sunflower"' },
-        { label: "Audio", value: "8 parlantes" },
-        { label: "HUD", value: 'AR Head-Up Display 53"' },
-      ],
-    },
-  ];
-
-  const warrantyInfo = [
-    { label: "Vehículo", value: "5 años o 120,000 km" },
-    { label: "Batería/Alta Tensión", value: "8 años o 150,000 km" },
-  ];
-
   return (
     <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold">Mi Vehículo</h1>
-          <p className="text-[var(--muted-foreground)]">
+      <div className="space-y-4 pb-4">
+        {/* Page title */}
+        <div className="pt-1">
+          <h1
+            className="text-2xl font-bold"
+            style={{
+              color: "var(--md-on-surface)",
+              fontFamily: "var(--font-display, 'Space Grotesk', system-ui)",
+            }}
+          >
+            Mi Vehículo
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: "var(--md-on-surface-variant)" }}>
             Información y especificaciones
           </p>
         </div>
 
-        {/* Vehicle Hero */}
-        <div className="card-premium overflow-hidden gradient-hero px-5 pt-6 pb-5">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-[var(--deepal-cyan)]/5 rounded-full blur-3xl" />
+        {/* Hero */}
+        <div
+          className="relative overflow-hidden rounded-[var(--shape-xl)] gradient-hero px-6 pt-7 pb-6"
+          style={{ boxShadow: "0 2px 12px var(--md-shadow)" }}
+        >
+          <div
+            className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-25 pointer-events-none"
+            style={{ background: "var(--md-primary)" }}
+          />
           <div className="relative">
-            <div className="text-[10px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.2em] mb-2">
-              Changan · Deepal
+            <p
+              className="type-label-sm tracking-[0.18em] mb-1"
+              style={{ color: "var(--md-on-primary-container)", opacity: 0.65 }}
+            >
+              CHANGAN · DEEPAL
+            </p>
+            <h2
+              style={{
+                fontFamily: "'NOS', 'Space Grotesk', system-ui, sans-serif",
+                fontSize: "clamp(40px, 11vw, 56px)",
+                fontWeight: 700,
+                lineHeight: 1,
+                letterSpacing: "0.04em",
+              }}
+            >
+              <span style={{ color: "var(--md-on-primary-container)" }}>DEEPAL </span>
+              <span style={{ color: "var(--md-primary)" }}>S05</span>
+            </h2>
+
+            <div
+              className="flex items-center gap-3 mt-2 text-xs"
+              style={{ color: "var(--md-on-primary-container)", opacity: 0.7 }}
+            >
+              <span>{vehicle.trim}</span>
+              <span className="w-px h-3" style={{ background: "currentColor", opacity: 0.4 }} />
+              <span>{vehicle.color}</span>
+              <span className="w-px h-3" style={{ background: "currentColor", opacity: 0.4 }} />
+              <span>{vehicle.year}</span>
             </div>
-            <h1 className="text-3xl font-black tracking-tight leading-none">
-              <span className="text-[var(--text-primary)]">Deepal</span>{" "}
-              <span className="bg-gradient-to-r from-[var(--deepal-cyan)] to-[var(--deepal-blue)] bg-clip-text text-transparent">
-                S05
-              </span>
-            </h1>
-            <div className="flex items-center gap-3 mt-2">
-              <span className="text-xs font-medium text-[var(--text-secondary)]">{vehicle.trim}</span>
-              <span className="w-1 h-1 rounded-full bg-[var(--text-tertiary)]" />
-              <span className="text-xs text-[var(--text-tertiary)]">{vehicle.color}</span>
-              <span className="w-1 h-1 rounded-full bg-[var(--text-tertiary)]" />
-              <span className="text-xs text-[var(--text-tertiary)]">{vehicle.year}</span>
-            </div>
-            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-[var(--card-border)]">
+
+            <div
+              className="flex items-center gap-6 mt-5 pt-4"
+              style={{ borderTop: "1px solid color-mix(in srgb, var(--md-on-primary-container) 20%, transparent)" }}
+            >
               <div>
-                <div className="text-[10px] text-[var(--text-tertiary)]">Odómetro</div>
-                <div className="text-lg font-bold">{formatKm(vehicle.currentOdometer)}</div>
+                <p
+                  className="type-label-sm"
+                  style={{ color: "var(--md-on-primary-container)", opacity: 0.6 }}
+                >
+                  Odómetro
+                </p>
+                <p
+                  className="text-xl font-bold mt-0.5"
+                  style={{ color: "var(--md-on-primary-container)" }}
+                >
+                  {formatKm(vehicle.currentOdometer)}
+                </p>
               </div>
-              <div className="w-px h-8 bg-[var(--card-border)]" />
+              <div
+                className="w-px self-stretch"
+                style={{ background: "color-mix(in srgb, var(--md-on-primary-container) 20%, transparent)" }}
+              />
               <div>
-                <div className="text-[10px] text-[var(--text-tertiary)]">Compra</div>
-                <div className="text-lg font-bold">{formatDate(vehicle.purchaseDate)}</div>
+                <p
+                  className="type-label-sm"
+                  style={{ color: "var(--md-on-primary-container)", opacity: 0.6 }}
+                >
+                  Entrega
+                </p>
+                <p
+                  className="text-xl font-bold mt-0.5"
+                  style={{ color: "var(--md-on-primary-container)" }}
+                >
+                  {formatDate(vehicle.purchaseDate)}
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Vehicle Info */}
-        <div className="space-y-4">
-          <GlassCard>
-            <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
-              <Car className="w-4 h-4 text-[var(--deepal-cyan)]" />
-              Información del Vehículo
-            </h3>
-            <div className="space-y-3">
-              <div className="flex justify-between py-2 border-b border-[var(--border)]">
-                <span className="text-[var(--muted-foreground)]">Marca</span>
-                <span className="font-medium">{vehicle.make}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-[var(--border)]">
-                <span className="text-[var(--muted-foreground)]">Modelo</span>
-                <span className="font-medium">{vehicle.model}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-[var(--border)]">
-                <span className="text-[var(--muted-foreground)]">Año</span>
-                <span className="font-medium">{vehicle.year}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-[var(--border)]">
-                <span className="text-[var(--muted-foreground)]">Versión</span>
-                <span className="font-medium">{vehicle.trim}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-[var(--border)]">
-                <span className="text-[var(--muted-foreground)]">Color</span>
-                <span className="font-medium">{vehicle.color}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-[var(--border)]">
-                <span className="text-[var(--muted-foreground)]">
-                  Fecha de Compra
-                </span>
-                <span className="font-medium">
-                  {formatDate(vehicle.purchaseDate)}
-                </span>
-              </div>
-              <div className="flex justify-between py-2">
-                <span className="text-[var(--muted-foreground)]">
-                  Kilometraje Actual
-                </span>
-                <span className="font-medium">
-                  {formatKm(vehicle.currentOdometer)}
-                </span>
-              </div>
-            </div>
-          </GlassCard>
-
-          <GlassCard>
-            <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-[var(--deepal-blue)]" />
-              Garantía
-            </h3>
-            <div className="space-y-3">
-              {warrantyInfo.map((item, index) => (
-                <div
-                  key={index}
-                  className={`flex justify-between py-2 ${
-                    index < warrantyInfo.length - 1
-                      ? "border-b border-[var(--border)]"
-                      : ""
-                  }`}
-                >
-                  <span className="text-[var(--muted-foreground)]">
-                    {item.label}
-                  </span>
-                  <span className="font-medium">{item.value}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 p-4 rounded-lg bg-[var(--deepal-cyan)]/5 border border-[var(--deepal-cyan)]/20">
-              <p className="text-sm">
-                <span className="font-medium text-[var(--deepal-cyan)]">
-                  Vendedor:
-                </span>{" "}
-                Derco Center Surco (Diego Mendez)
-              </p>
-              <p className="text-sm mt-1 text-[var(--muted-foreground)]">
-                Benavides, Surco, Lima
-              </p>
-            </div>
-          </GlassCard>
+        {/* Vehicle info card */}
+        <div className="card-filled p-5">
+          <h3
+            className="font-semibold text-sm mb-4 flex items-center gap-2"
+            style={{ color: "var(--md-on-surface)" }}
+          >
+            <Car className="w-4 h-4" style={{ color: "var(--md-primary)" }} />
+            Información del Vehículo
+          </h3>
+          <div className="space-y-0">
+            {[
+              { label: "Marca", value: vehicle.make },
+              { label: "Modelo", value: vehicle.model },
+              { label: "Año", value: String(vehicle.year) },
+              { label: "Versión", value: vehicle.trim },
+              { label: "Color", value: vehicle.color },
+              { label: "Fecha de compra", value: formatDate(vehicle.purchaseDate) },
+              { label: "Kilometraje actual", value: formatKm(vehicle.currentOdometer) },
+            ].map((item, i, arr) => (
+              <SpecRow key={item.label} label={item.label} value={item.value} last={i === arr.length - 1} />
+            ))}
+          </div>
         </div>
 
-        {/* Specifications */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold">Especificaciones Técnicas</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {specs.map((section) => (
-              <GlassCard key={section.category}>
-                <h3 className="font-semibold mb-4 flex items-center gap-2">
-                  <section.icon className="w-5 h-5 text-[var(--deepal-cyan)]" />
-                  {section.category}
-                </h3>
-                <div className="space-y-2">
-                  {section.items.map((item, index) => (
+        {/* Warranty card */}
+        <div className="card-filled p-5">
+          <h3
+            className="font-semibold text-sm mb-4 flex items-center gap-2"
+            style={{ color: "var(--md-on-surface)" }}
+          >
+            <Shield className="w-4 h-4" style={{ color: "var(--color-service)" }} />
+            Garantía
+          </h3>
+          <SpecRow label="Vehículo" value="5 años o 120,000 km" />
+          <SpecRow label="Batería / Alta tensión" value="8 años o 150,000 km" last />
+          <div
+            className="mt-4 p-3 rounded-[var(--shape-md)]"
+            style={{
+              background: "var(--md-primary-container)",
+              color: "var(--md-on-primary-container)",
+            }}
+          >
+            <p className="text-sm font-medium">Derco Center Surco (Diego Mendez)</p>
+            <p className="text-xs mt-0.5" style={{ opacity: 0.75 }}>Benavides, Surco, Lima</p>
+          </div>
+        </div>
+
+        {/* Specs */}
+        <div>
+          <h2
+            className="text-base font-semibold mb-3 px-1"
+            style={{ color: "var(--md-on-surface)" }}
+          >
+            Especificaciones Técnicas
+          </h2>
+          <div className="space-y-3">
+            {specs.map((section) => {
+              const Icon = section.icon;
+              return (
+                <div key={section.category} className="card-outlined p-5">
+                  <h3
+                    className="font-semibold text-sm mb-3 flex items-center gap-2"
+                    style={{ color: "var(--md-on-surface)" }}
+                  >
                     <div
-                      key={index}
-                      className={`flex justify-between py-2 ${
-                        index < section.items.length - 1
-                          ? "border-b border-[var(--border)]"
-                          : ""
-                      }`}
+                      className="w-7 h-7 rounded-[var(--shape-sm)] flex items-center justify-center"
+                      style={{ background: section.bg, color: section.color }}
                     >
-                      <span className="text-[var(--muted-foreground)] text-sm">
-                        {item.label}
-                      </span>
-                      <span className="font-medium text-sm text-right max-w-[60%]">
-                        {item.value}
-                      </span>
+                      <Icon className="w-3.5 h-3.5" />
                     </div>
-                  ))}
+                    {section.category}
+                  </h3>
+                  <div>
+                    {section.items.map((item, i) => (
+                      <SpecRow
+                        key={item.label}
+                        label={item.label}
+                        value={item.value}
+                        last={i === section.items.length - 1}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </GlassCard>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

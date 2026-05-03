@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Zap } from "lucide-react";
+import { Settings, Zap, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const PAGE_TITLES: Record<string, string> = {
@@ -47,6 +47,12 @@ export function Header() {
             </span>
           )}
         </Link>
+
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/vehicle" aria-label="Mi Vehículo">
+            <Car className="h-5 w-5" style={{ color: "var(--md-on-surface-variant)" }} />
+          </Link>
+        </Button>
 
         <Button variant="ghost" size="icon" asChild>
           <Link href="/settings" aria-label="Configuración">

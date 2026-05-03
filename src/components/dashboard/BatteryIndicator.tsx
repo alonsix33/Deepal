@@ -10,10 +10,10 @@ export function BatteryIndicator({ level, range, charging }: Props) {
   const pct = Math.min(100, Math.max(0, level));
   const color =
     pct > 60
-      ? "var(--energy-green)"
+      ? "var(--md-tertiary)"
       : pct > 30
-        ? "var(--fuel-amber)"
-        : "var(--error)";
+        ? "var(--color-fuel)"
+        : "var(--md-error)";
 
   return (
     <div className="flex items-center gap-4">
@@ -45,10 +45,10 @@ export function BatteryIndicator({ level, range, charging }: Props) {
           <span className="text-3xl font-bold tracking-tight" style={{ color }}>
             {pct}
           </span>
-          <span className="text-sm font-medium text-[var(--text-secondary)]">%</span>
+          <span className="text-sm font-medium" style={{ color: "var(--md-on-surface-variant)" }}>%</span>
         </div>
-        <div className="text-xs text-[var(--text-tertiary)]">
-          <span className="font-medium text-[var(--text-secondary)]">{range}</span> km estimados
+        <div className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
+          <span className="font-medium" style={{ color: "var(--md-on-surface)" }}>{range}</span> km estimados
         </div>
       </div>
     </div>
