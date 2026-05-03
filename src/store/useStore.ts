@@ -709,6 +709,16 @@ export const useStore = create<AppState>()(
     }),
     {
       name: "deepal-s05-storage",
+      // Never persist isInitialized — forces a fresh API fetch on every page load
+      // so the UI always reflects the latest DB state.
+      partialize: (state) => ({
+        vehicle: state.vehicle,
+        charges: state.charges,
+        fuelUps: state.fuelUps,
+        services: state.services,
+        trips: state.trips,
+        settings: state.settings,
+      }),
     }
   )
 );
