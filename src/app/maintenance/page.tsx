@@ -16,7 +16,7 @@ import {
   Plus,
   Wrench,
   Search,
-  Trash2,
+  Pencil,
   Calendar,
   Gauge,
   Building,
@@ -57,7 +57,7 @@ const CONFIDENCE_CONFIG = {
 };
 
 export default function MaintenancePage() {
-  const { services, deleteService, vehicle, charges, fuelUps } = useStore();
+  const { services, vehicle, charges, fuelUps } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredServices = services
@@ -546,17 +546,12 @@ export default function MaintenancePage() {
                     >
                       {formatCurrency(service.costPEN)}
                     </p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="mt-1 h-7 w-7"
-                      style={
-                        { color: "var(--md-error)" } as React.CSSProperties
-                      }
-                      onClick={() => deleteService(service.id)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                    <Link href={`/maintenance/${service.id}/edit`}>
+                      <Button variant="ghost" size="icon" className="mt-1 h-7 w-7"
+                        style={{ color: "var(--md-on-surface-variant)" } as React.CSSProperties}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>

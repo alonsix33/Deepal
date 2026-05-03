@@ -96,41 +96,27 @@ export default function AnalyticsPage() {
   const colors = useChartColors();
 
   const monthlyData = useMemo(() => {
-    const months: Record<
-      string,
-      { month: string; electric: number; fuel: number; maintenance: number }
-    > = {};
+    const months: Record<string, { month: string; electric: number; fuel: number; maintenance: number; sortKey: number }> = {};
 
-    charges.forEach((charge) => {
-      const month = new Date(charge.date).toLocaleDateString("es-PE", {
-        month: "short",
-        year: "2-digit",
-      });
-      if (!months[month]) months[month] = { month, electric: 0, fuel: 0, maintenance: 0 };
-      months[month].electric += charge.totalCost;
-    });
+    const upsert = (date: Date, field: "electric" | "fuel" | "maintenance", amount: number) => {
+      const key = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, "0")}`;
+      if (!months[key]) {
+        months[key] = {
+          month: date.toLocaleDateString("es-PE", { month: "short", year: "2-digit" }),
+          electric: 0, fuel: 0, maintenance: 0,
+          sortKey: date.getFullYear() * 100 + date.getMonth(),
+        };
+      }
+      months[key][field] += amount;
+    };
 
-    fuelUps.forEach((fuelUp) => {
-      const month = new Date(fuelUp.date).toLocaleDateString("es-PE", {
-        month: "short",
-        year: "2-digit",
-      });
-      if (!months[month]) months[month] = { month, electric: 0, fuel: 0, maintenance: 0 };
-      months[month].fuel += fuelUp.costPEN;
-    });
+    charges.forEach((c) => upsert(new Date(c.date), "electric", c.totalCost));
+    fuelUps.forEach((f) => upsert(new Date(f.date), "fuel", f.costPEN));
+    services.forEach((s) => upsert(new Date(s.date), "maintenance", s.costPEN));
 
-    services.forEach((service) => {
-      const month = new Date(service.date).toLocaleDateString("es-PE", {
-        month: "short",
-        year: "2-digit",
-      });
-      if (!months[month]) months[month] = { month, electric: 0, fuel: 0, maintenance: 0 };
-      months[month].maintenance += service.costPEN;
-    });
-
-    return Object.values(months).sort(
-      (a, b) => new Date("1 " + a.month).getTime() - new Date("1 " + b.month).getTime()
-    );
+    return Object.values(months)
+      .sort((a, b) => a.sortKey - b.sortKey)
+      .map(({ month, electric, fuel, maintenance }) => ({ month, electric, fuel, maintenance }));
   }, [charges, fuelUps, services]);
 
   const usageData = useMemo(() => {
@@ -146,13 +132,22 @@ export default function AnalyticsPage() {
   }, [charges, fuelUps, colors]);
 
   const kwhData = useMemo(() => {
-    const months: Record<string, { month: string; kwh: number }> = {};
+    const months: Record<string, { month: string; kwh: number; sortKey: number }> = {};
     charges.forEach((charge) => {
-      const month = new Date(charge.date).toLocaleDateString("es-PE", { month: "short" });
-      if (!months[month]) months[month] = { month, kwh: 0 };
-      months[month].kwh += charge.kwhCharged;
+      const d = new Date(charge.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth()).padStart(2, "0")}`;
+      if (!months[key]) {
+        months[key] = {
+          month: d.toLocaleDateString("es-PE", { month: "short" }),
+          kwh: 0,
+          sortKey: d.getFullYear() * 100 + d.getMonth(),
+        };
+      }
+      months[key].kwh += charge.kwhCharged;
     });
-    return Object.values(months);
+    return Object.values(months)
+      .sort((a, b) => a.sortKey - b.sortKey)
+      .map(({ month, kwh }) => ({ month, kwh }));
   }, [charges]);
 
   const locationData = useMemo(() => {
