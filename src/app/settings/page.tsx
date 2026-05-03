@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { GlassCard } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,6 +55,108 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+
+type OdomEntry = {
+  date: string;
+  odometer: number;
+  source: "manual" | "charge" | "fuel" | "service";
+  notes?: string | null;
+};
+
+const SOURCE_CFG = {
+  manual:  { label: "Manual",      bg: "var(--md-secondary-container)",  color: "var(--md-on-secondary-container)", Icon: Gauge   },
+  charge:  { label: "Carga",        bg: "var(--md-primary-container)",    color: "var(--md-on-primary-container)",   Icon: Zap     },
+  fuel:    { label: "Combustible",  bg: "var(--color-fuel-container)",    color: "var(--color-fuel)",                Icon: Fuel    },
+  service: { label: "Servicio",     bg: "var(--color-service-container)", color: "var(--color-service)",             Icon: Wrench  },
+} as const;
+
+const MAX_VISIBLE = 5;
+
+function OdometerLogList({
+  entries,
+  showAll,
+  onToggleShowAll,
+}: {
+  entries: OdomEntry[];
+  showAll: boolean;
+  onToggleShowAll: () => void;
+}) {
+  const visible = showAll ? entries : entries.slice(0, MAX_VISIBLE);
+
+  if (entries.length === 0) {
+    return (
+      <div className="text-center py-8 rounded-[var(--shape-lg)]" style={{ background: "var(--md-surface-container)" }}>
+        <Gauge className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--md-outline)" }} />
+        <p className="text-sm font-medium" style={{ color: "var(--md-on-surface)" }}>Sin registros aún</p>
+        <p className="text-xs mt-1" style={{ color: "var(--md-on-surface-variant)" }}>
+          Agrega una lectura manual o ingresa el odómetro en tus cargas
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--md-on-surface-variant)" }}>
+        Historial · {entries.length} {entries.length === 1 ? "registro" : "registros"}
+      </p>
+      <div className="rounded-[var(--shape-lg)] overflow-hidden" style={{ border: "1px solid var(--md-outline-variant)" }}>
+        {visible.map((entry, i) => {
+          const cfg = SOURCE_CFG[entry.source];
+          const Icon = cfg.Icon;
+          return (
+            <div
+              key={`${entry.source}-${entry.date}-${entry.odometer}-${i}`}
+              className="flex items-center gap-3 px-4 py-3"
+              style={{ borderBottom: i < visible.length - 1 ? "1px solid var(--md-outline-variant)" : undefined }}
+            >
+              <div
+                className="w-8 h-8 rounded-[var(--shape-sm)] flex items-center justify-center shrink-0"
+                style={{ background: cfg.bg }}
+              >
+                <Icon className="w-4 h-4" style={{ color: cfg.color }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-base font-bold" style={{ color: "var(--md-on-surface)", fontFamily: "var(--font-display, system-ui)" }}>
+                    {entry.odometer.toLocaleString("es-PE")}
+                  </span>
+                  <span className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>km</span>
+                </div>
+                {entry.notes && (
+                  <p className="text-xs truncate mt-0.5" style={{ color: "var(--md-on-surface-variant)" }}>{entry.notes}</p>
+                )}
+              </div>
+              <div className="text-right shrink-0 space-y-1">
+                <p className="text-xs font-medium" style={{ color: "var(--md-on-surface)" }}>
+                  {new Date(entry.date).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "2-digit" })}
+                </p>
+                <span
+                  className="inline-block text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                  style={{ background: cfg.bg, color: cfg.color }}
+                >
+                  {cfg.label}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {entries.length > MAX_VISIBLE && (
+        <button
+          type="button"
+          onClick={onToggleShowAll}
+          className="w-full mt-2 flex items-center justify-center gap-1.5 py-2 text-xs font-medium rounded-[var(--shape-md)] transition-colors"
+          style={{ color: "var(--md-primary)" }}
+        >
+          {showAll
+            ? <><ChevronUp className="w-3.5 h-3.5" />Ver menos</>
+            : <><ChevronDown className="w-3.5 h-3.5" />Ver todos ({entries.length - MAX_VISIBLE} más)</>}
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const {
@@ -220,6 +322,16 @@ export default function SettingsPage() {
       setIsAddingOdometer(false);
     }
   };
+
+  const allOdometerEntries = useMemo((): OdomEntry[] => {
+    const entries: OdomEntry[] = [
+      ...odometerLogs.map((l) => ({ date: l.date, odometer: l.odometer, source: "manual" as const, notes: l.notes })),
+      ...charges.filter((c) => c.odometerEnd && c.odometerEnd > 0).map((c) => ({ date: c.date, odometer: c.odometerEnd!, source: "charge" as const, notes: c.location })),
+      ...fuelUps.filter((f) => f.odometer > 0).map((f) => ({ date: f.date, odometer: f.odometer, source: "fuel" as const, notes: f.location })),
+      ...services.filter((s) => s.odometer > 0).map((s) => ({ date: s.date, odometer: s.odometer, source: "service" as const, notes: s.serviceType })),
+    ];
+    return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [odometerLogs, charges, fuelUps, services]);
 
   const handleResetData = async () => {
     try {
@@ -466,113 +578,11 @@ export default function SettingsPage() {
           </div>
 
           {/* Combined log list */}
-          {(() => {
-            type OdomEntry = { date: string; odometer: number; source: "manual" | "charge" | "fuel" | "service"; notes?: string | null };
-            const allEntries: OdomEntry[] = [
-              ...odometerLogs.map((l) => ({ date: l.date, odometer: l.odometer, source: "manual" as const, notes: l.notes })),
-              ...charges.filter((c) => c.odometerEnd && c.odometerEnd > 0).map((c) => ({ date: c.date, odometer: c.odometerEnd!, source: "charge" as const, notes: c.location })),
-              ...fuelUps.filter((f) => f.odometer > 0).map((f) => ({ date: f.date, odometer: f.odometer, source: "fuel" as const, notes: f.location })),
-              ...services.filter((s) => s.odometer > 0).map((s) => ({ date: s.date, odometer: s.odometer, source: "service" as const, notes: s.serviceType })),
-            ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-            const MAX_VISIBLE = 5;
-            const entries = showAllOdometer ? allEntries : allEntries.slice(0, MAX_VISIBLE);
-
-            const sourceCfg = {
-              manual:  { label: "Manual",      bg: "var(--md-secondary-container)",     color: "var(--md-on-secondary-container)",  Icon: Gauge },
-              charge:  { label: "Carga",        bg: "var(--md-primary-container)",       color: "var(--md-on-primary-container)",     Icon: Zap   },
-              fuel:    { label: "Combustible",  bg: "var(--color-fuel-container)",       color: "var(--color-fuel)",                  Icon: Fuel  },
-              service: { label: "Servicio",     bg: "var(--color-service-container)",    color: "var(--color-service)",               Icon: Wrench},
-            };
-
-            if (allEntries.length === 0) {
-              return (
-                <div className="text-center py-8 rounded-[var(--shape-lg)]" style={{ background: "var(--md-surface-container)" }}>
-                  <Gauge className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--md-outline)" }} />
-                  <p className="text-sm font-medium" style={{ color: "var(--md-on-surface)" }}>Sin registros aún</p>
-                  <p className="text-xs mt-1" style={{ color: "var(--md-on-surface-variant)" }}>
-                    Agrega una lectura manual o ingresa el odómetro en tus cargas
-                  </p>
-                </div>
-              );
-            }
-
-            return (
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--md-on-surface-variant)" }}>
-                  Historial · {allEntries.length} {allEntries.length === 1 ? "registro" : "registros"}
-                </p>
-                <div className="rounded-[var(--shape-lg)] overflow-hidden" style={{ border: "1px solid var(--md-outline-variant)" }}>
-                  {entries.map((entry, i) => {
-                    const cfg = sourceCfg[entry.source];
-                    const { Icon } = cfg;
-                    return (
-                      <div
-                        key={`${entry.source}-${entry.date}-${entry.odometer}-${i}`}
-                        className="flex items-center gap-3 px-4 py-3"
-                        style={{
-                          borderBottom: i < entries.length - 1 ? "1px solid var(--md-outline-variant)" : undefined,
-                        }}
-                      >
-                        {/* Icon */}
-                        <div
-                          className="w-8 h-8 rounded-[var(--shape-sm)] flex items-center justify-center shrink-0"
-                          style={{ background: cfg.bg }}
-                        >
-                          <Icon className="w-4 h-4" style={{ color: cfg.color }} />
-                        </div>
-
-                        {/* Main info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-baseline gap-1.5">
-                            <span
-                              className="text-base font-bold"
-                              style={{ color: "var(--md-on-surface)", fontFamily: "var(--font-display, system-ui)" }}
-                            >
-                              {entry.odometer.toLocaleString("es-PE")}
-                            </span>
-                            <span className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>km</span>
-                          </div>
-                          {entry.notes && (
-                            <p className="text-xs truncate mt-0.5" style={{ color: "var(--md-on-surface-variant)" }}>
-                              {entry.notes}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Right: date + badge */}
-                        <div className="text-right shrink-0 space-y-1">
-                          <p className="text-xs font-medium" style={{ color: "var(--md-on-surface)" }}>
-                            {new Date(entry.date).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "2-digit" })}
-                          </p>
-                          <span
-                            className="inline-block text-[10px] px-1.5 py-0.5 rounded-full font-medium"
-                            style={{ background: cfg.bg, color: cfg.color }}
-                          >
-                            {cfg.label}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Expand / collapse */}
-                {allEntries.length > MAX_VISIBLE && (
-                  <button
-                    type="button"
-                    onClick={() => setShowAllOdometer((v) => !v)}
-                    className="w-full mt-2 flex items-center justify-center gap-1.5 py-2 text-xs font-medium rounded-[var(--shape-md)] transition-colors"
-                    style={{ color: "var(--md-primary)" }}
-                  >
-                    {showAllOdometer
-                      ? <><ChevronUp className="w-3.5 h-3.5" />Ver menos</>
-                      : <><ChevronDown className="w-3.5 h-3.5" />Ver todos ({allEntries.length - MAX_VISIBLE} más)</>}
-                  </button>
-                )}
-              </div>
-            );
-          })()}
+          <OdometerLogList
+            entries={allOdometerEntries}
+            showAll={showAllOdometer}
+            onToggleShowAll={() => setShowAllOdometer((v) => !v)}
+          />
         </GlassCard>
 
         {/* Language and Units */}
