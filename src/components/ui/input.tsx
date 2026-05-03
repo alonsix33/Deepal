@@ -8,7 +8,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
         type={type}
         className={cn(
           // MD3 Outlined Text Field style
-          "flex h-14 w-full rounded-[var(--shape-sm)] border border-[var(--md-outline)]",
+          "flex h-14 w-full min-w-0 max-w-full rounded-[var(--shape-sm)] border border-[var(--md-outline)]",
           "bg-transparent px-4 py-2 text-base text-[var(--md-on-surface)]",
           "placeholder:text-[var(--md-on-surface-variant)]",
           "transition-all duration-200",

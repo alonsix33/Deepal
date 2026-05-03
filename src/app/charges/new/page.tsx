@@ -322,6 +322,7 @@ export default function NewChargePage() {
               type="date"
               value={formData.date}
               onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
+              className="w-full min-w-0 max-w-full"
               required
               disabled={isSubmitting}
             />

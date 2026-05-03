@@ -472,6 +472,17 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/* iOS Safari: date inputs ignore width constraints without this */
+input[type="date"] {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  /* Prevent iOS from overriding our sizing while keeping the native date picker */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;

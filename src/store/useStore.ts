@@ -271,7 +271,10 @@ export const useStore = create<AppState>()(
               charges: [...state.charges, newCharge],
               vehicle: {
                 ...state.vehicle,
-                currentOdometer: charge.odometerEnd,
+                currentOdometer: Math.max(
+                  state.vehicle.currentOdometer,
+                  charge.odometerEnd
+                ),
               },
             };
           }
@@ -309,7 +312,10 @@ export const useStore = create<AppState>()(
             if (charge.odometerEnd) {
               newState.vehicle = {
                 ...state.vehicle,
-                currentOdometer: charge.odometerEnd,
+                currentOdometer: Math.max(
+                  state.vehicle.currentOdometer,
+                  charge.odometerEnd
+                ),
               };
             }
             return newState as AppState;
