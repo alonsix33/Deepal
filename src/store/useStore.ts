@@ -203,6 +203,20 @@ export const useStore = create<AppState>()(
             createdAt: l.createdAt,
           }));
 
+          // Determine current odometer from the entry with the most recent date
+          // across all sources. Date is the primary indicator; numeric max is the
+          // tiebreaker for same-date entries.
+          const allOdomEvents = [
+            ...odometerLogs.map((l) => ({ date: l.date, odometer: l.odometer })),
+            ...charges.filter((c) => (c.odometerEnd ?? 0) > 0).map((c) => ({ date: c.date, odometer: c.odometerEnd! })),
+            ...fuelUps.filter((f) => f.odometer > 0).map((f) => ({ date: f.date, odometer: f.odometer })),
+            ...services.filter((s) => s.odometer > 0).map((s) => ({ date: s.date, odometer: s.odometer })),
+          ].sort((a, b) => {
+            const dt = new Date(b.date).getTime() - new Date(a.date).getTime();
+            return dt !== 0 ? dt : b.odometer - a.odometer;
+          });
+          const trueCurrentOdometer = allOdomEvents[0]?.odometer ?? vehicleData?.currentOdometer ?? 0;
+
           set({
             vehicle: vehicleData
               ? {
@@ -216,7 +230,7 @@ export const useStore = create<AppState>()(
                   purchaseDate: vehicleData.purchaseDate.split("T")[0],
                   purchasePrice: vehicleData.purchasePrice,
                   odometerStart: vehicleData.odometerStart,
-                  currentOdometer: vehicleData.currentOdometer,
+                  currentOdometer: trueCurrentOdometer,
                 }
               : defaultVehicle,
             charges,
@@ -633,14 +647,25 @@ export const useStore = create<AppState>()(
             notes: response.notes,
             createdAt: response.createdAt,
           };
-          set((state) => ({
-            odometerLogs: [newLog, ...state.odometerLogs],
-            vehicle: {
-              ...state.vehicle,
-              currentOdometer: Math.max(state.vehicle.currentOdometer, data.odometer),
-            },
-            isLoading: false,
-          }));
+          set((state) => {
+            const updatedLogs = [newLog, ...state.odometerLogs];
+            // Use the most-recent-by-date entry as the current odometer.
+            const events = [
+              ...updatedLogs.map((l) => ({ date: l.date, odometer: l.odometer })),
+              ...state.charges.filter((c) => (c.odometerEnd ?? 0) > 0).map((c) => ({ date: c.date, odometer: c.odometerEnd! })),
+              ...state.fuelUps.filter((f) => f.odometer > 0).map((f) => ({ date: f.date, odometer: f.odometer })),
+              ...state.services.filter((s) => s.odometer > 0).map((s) => ({ date: s.date, odometer: s.odometer })),
+            ].sort((a, b) => {
+              const dt = new Date(b.date).getTime() - new Date(a.date).getTime();
+              return dt !== 0 ? dt : b.odometer - a.odometer;
+            });
+            const currentOdometer = events[0]?.odometer ?? state.vehicle.currentOdometer;
+            return {
+              odometerLogs: updatedLogs,
+              vehicle: { ...state.vehicle, currentOdometer },
+              isLoading: false,
+            };
+          });
         } catch (error) {
           console.error("Error adding odometer log:", error);
           set({ error: "Error al registrar odómetro", isLoading: false });

@@ -61,11 +61,33 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Update vehicle current odometer
-    if (data.odometer > vehicle.currentOdometer) {
+    // Find the current odometer from the most-recent-by-date entry across all
+    // sources. Date is the primary indicator; numeric value breaks ties.
+    const [latestLog, latestCharge, latestFuelUp, latestService] = await Promise.all([
+      prisma.odometerLog.findFirst({ where: { vehicleId: vehicle.id }, orderBy: { date: "desc" } }),
+      prisma.charge.findFirst({ where: { vehicleId: vehicle.id, odometerEnd: { gt: 0 } }, orderBy: { date: "desc" } }),
+      prisma.fuelUp.findFirst({ where: { vehicleId: vehicle.id, odometer: { gt: 0 } }, orderBy: { date: "desc" } }),
+      prisma.service.findFirst({ where: { vehicleId: vehicle.id, odometer: { gt: 0 } }, orderBy: { date: "desc" } }),
+    ]);
+
+    const candidates = [
+      latestLog ? { date: latestLog.date, odometer: latestLog.odometer } : null,
+      latestCharge ? { date: latestCharge.date, odometer: latestCharge.odometerEnd ?? 0 } : null,
+      latestFuelUp ? { date: latestFuelUp.date, odometer: latestFuelUp.odometer } : null,
+      latestService ? { date: latestService.date, odometer: latestService.odometer } : null,
+    ].filter(Boolean) as { date: Date; odometer: number }[];
+
+    candidates.sort((a, b) => {
+      const dt = new Date(b.date).getTime() - new Date(a.date).getTime();
+      return dt !== 0 ? dt : b.odometer - a.odometer;
+    });
+
+    const trueCurrentOdometer = candidates[0]?.odometer ?? vehicle.currentOdometer;
+
+    if (trueCurrentOdometer !== vehicle.currentOdometer) {
       await prisma.vehicle.update({
         where: { id: vehicle.id },
-        data: { currentOdometer: data.odometer },
+        data: { currentOdometer: trueCurrentOdometer },
       });
     }
 
