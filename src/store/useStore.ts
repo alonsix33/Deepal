@@ -203,15 +203,19 @@ export const useStore = create<AppState>()(
             createdAt: l.createdAt,
           }));
 
-          // Compute true max odometer from all sources — the DB vehicle record
-          // can be stale if retroactive entries were added after newer ones.
-          const trueCurrentOdometer = Math.max(
-            vehicleData?.currentOdometer ?? 0,
-            ...odometerLogs.map((l) => l.odometer),
-            ...charges.map((c) => c.odometerEnd ?? 0),
-            ...fuelUps.map((f) => f.odometer),
-            ...services.map((s) => s.odometer),
-          );
+          // Determine current odometer from the entry with the most recent date
+          // across all sources. Date is the primary indicator; numeric max is the
+          // tiebreaker for same-date entries.
+          const allOdomEvents = [
+            ...odometerLogs.map((l) => ({ date: l.date, odometer: l.odometer })),
+            ...charges.filter((c) => (c.odometerEnd ?? 0) > 0).map((c) => ({ date: c.date, odometer: c.odometerEnd! })),
+            ...fuelUps.filter((f) => f.odometer > 0).map((f) => ({ date: f.date, odometer: f.odometer })),
+            ...services.filter((s) => s.odometer > 0).map((s) => ({ date: s.date, odometer: s.odometer })),
+          ].sort((a, b) => {
+            const dt = new Date(b.date).getTime() - new Date(a.date).getTime();
+            return dt !== 0 ? dt : b.odometer - a.odometer;
+          });
+          const trueCurrentOdometer = allOdomEvents[0]?.odometer ?? vehicleData?.currentOdometer ?? 0;
 
           set({
             vehicle: vehicleData
@@ -645,18 +649,20 @@ export const useStore = create<AppState>()(
           };
           set((state) => {
             const updatedLogs = [newLog, ...state.odometerLogs];
-            // Recompute true max across all sources so a retroactive (older) entry
-            // never lowers the displayed current odometer.
-            const trueMax = Math.max(
-              ...updatedLogs.map((l) => l.odometer),
-              ...state.charges.map((c) => c.odometerEnd ?? 0),
-              ...state.fuelUps.map((f) => f.odometer),
-              ...state.services.map((s) => s.odometer),
-              state.vehicle.odometerStart,
-            );
+            // Use the most-recent-by-date entry as the current odometer.
+            const events = [
+              ...updatedLogs.map((l) => ({ date: l.date, odometer: l.odometer })),
+              ...state.charges.filter((c) => (c.odometerEnd ?? 0) > 0).map((c) => ({ date: c.date, odometer: c.odometerEnd! })),
+              ...state.fuelUps.filter((f) => f.odometer > 0).map((f) => ({ date: f.date, odometer: f.odometer })),
+              ...state.services.filter((s) => s.odometer > 0).map((s) => ({ date: s.date, odometer: s.odometer })),
+            ].sort((a, b) => {
+              const dt = new Date(b.date).getTime() - new Date(a.date).getTime();
+              return dt !== 0 ? dt : b.odometer - a.odometer;
+            });
+            const currentOdometer = events[0]?.odometer ?? state.vehicle.currentOdometer;
             return {
               odometerLogs: updatedLogs,
-              vehicle: { ...state.vehicle, currentOdometer: trueMax },
+              vehicle: { ...state.vehicle, currentOdometer },
               isLoading: false,
             };
           });

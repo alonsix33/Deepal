@@ -61,28 +61,33 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Compute the true max odometer across all sources — vehicle.currentOdometer
-    // can be stale (e.g. retroactive entries entered after newer ones), so we
-    // query the real maximums from each table.
-    const [maxLog, maxCharge, maxFuelUp, maxService] = await Promise.all([
-      prisma.odometerLog.aggregate({ _max: { odometer: true }, where: { vehicleId: vehicle.id } }),
-      prisma.charge.aggregate({ _max: { odometerEnd: true }, where: { vehicleId: vehicle.id } }),
-      prisma.fuelUp.aggregate({ _max: { odometer: true }, where: { vehicleId: vehicle.id } }),
-      prisma.service.aggregate({ _max: { odometer: true }, where: { vehicleId: vehicle.id } }),
+    // Find the current odometer from the most-recent-by-date entry across all
+    // sources. Date is the primary indicator; numeric value breaks ties.
+    const [latestLog, latestCharge, latestFuelUp, latestService] = await Promise.all([
+      prisma.odometerLog.findFirst({ where: { vehicleId: vehicle.id }, orderBy: { date: "desc" } }),
+      prisma.charge.findFirst({ where: { vehicleId: vehicle.id, odometerEnd: { gt: 0 } }, orderBy: { date: "desc" } }),
+      prisma.fuelUp.findFirst({ where: { vehicleId: vehicle.id, odometer: { gt: 0 } }, orderBy: { date: "desc" } }),
+      prisma.service.findFirst({ where: { vehicleId: vehicle.id, odometer: { gt: 0 } }, orderBy: { date: "desc" } }),
     ]);
 
-    const trueMax = Math.max(
-      vehicle.currentOdometer,
-      maxLog._max.odometer ?? 0,
-      maxCharge._max.odometerEnd ?? 0,
-      maxFuelUp._max.odometer ?? 0,
-      maxService._max.odometer ?? 0,
-    );
+    const candidates = [
+      latestLog ? { date: latestLog.date, odometer: latestLog.odometer } : null,
+      latestCharge ? { date: latestCharge.date, odometer: latestCharge.odometerEnd ?? 0 } : null,
+      latestFuelUp ? { date: latestFuelUp.date, odometer: latestFuelUp.odometer } : null,
+      latestService ? { date: latestService.date, odometer: latestService.odometer } : null,
+    ].filter(Boolean) as { date: Date; odometer: number }[];
 
-    if (trueMax > vehicle.currentOdometer) {
+    candidates.sort((a, b) => {
+      const dt = new Date(b.date).getTime() - new Date(a.date).getTime();
+      return dt !== 0 ? dt : b.odometer - a.odometer;
+    });
+
+    const trueCurrentOdometer = candidates[0]?.odometer ?? vehicle.currentOdometer;
+
+    if (trueCurrentOdometer !== vehicle.currentOdometer) {
       await prisma.vehicle.update({
         where: { id: vehicle.id },
-        data: { currentOdometer: trueMax },
+        data: { currentOdometer: trueCurrentOdometer },
       });
     }
 
