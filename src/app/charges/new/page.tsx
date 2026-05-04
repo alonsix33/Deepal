@@ -15,6 +15,7 @@ import { ArrowLeft, Zap, Save, Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { SliderRow } from "@/components/ui/slider-row";
+import { BatteryBar } from "@/components/ui/battery-bar";
 
 export default function NewChargePage() {
   const router = useRouter();
@@ -133,44 +134,7 @@ export default function NewChargePage() {
               </h3>
             </div>
 
-            {/* Visual bar */}
-            <div
-              className="relative h-12 rounded-[var(--shape-md)] overflow-hidden mb-4"
-              style={{ background: "var(--md-surface-container-high)" }}
-            >
-              {/* Full end-percent fill */}
-              <div
-                className="absolute inset-y-0 left-0 transition-all duration-300"
-                style={{
-                  width: `${endPercent}%`,
-                  background: `linear-gradient(90deg, color-mix(in srgb, var(--md-primary) 30%, transparent), var(--md-primary))`,
-                }}
-              />
-              {/* Start-to-end charged segment */}
-              <div
-                className="absolute inset-y-0 transition-all duration-300"
-                style={{
-                  left: `${startPercent}%`,
-                  width: `${Math.max(0, endPercent - startPercent)}%`,
-                  background: "var(--md-primary)",
-                  opacity: 0.9,
-                }}
-              />
-              <div className="absolute inset-0 flex items-center justify-between px-3">
-                <span
-                  className="text-xs font-bold"
-                  style={{ color: startPercent > 15 ? "var(--md-on-primary)" : "var(--md-on-surface)" }}
-                >
-                  {startPercent}%
-                </span>
-                <span
-                  className="text-xs font-bold"
-                  style={{ color: endPercent > 50 ? "var(--md-on-primary)" : "var(--md-on-surface)" }}
-                >
-                  {endPercent}%
-                </span>
-              </div>
-            </div>
+            <BatteryBar startPercent={startPercent} endPercent={endPercent} />
 
             {/* Sliders — one per row, full width */}
             <div className="space-y-4">
