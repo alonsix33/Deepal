@@ -61,11 +61,28 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Update vehicle current odometer
-    if (data.odometer > vehicle.currentOdometer) {
+    // Compute the true max odometer across all sources — vehicle.currentOdometer
+    // can be stale (e.g. retroactive entries entered after newer ones), so we
+    // query the real maximums from each table.
+    const [maxLog, maxCharge, maxFuelUp, maxService] = await Promise.all([
+      prisma.odometerLog.aggregate({ _max: { odometer: true }, where: { vehicleId: vehicle.id } }),
+      prisma.charge.aggregate({ _max: { odometerEnd: true }, where: { vehicleId: vehicle.id } }),
+      prisma.fuelUp.aggregate({ _max: { odometer: true }, where: { vehicleId: vehicle.id } }),
+      prisma.service.aggregate({ _max: { odometer: true }, where: { vehicleId: vehicle.id } }),
+    ]);
+
+    const trueMax = Math.max(
+      vehicle.currentOdometer,
+      maxLog._max.odometer ?? 0,
+      maxCharge._max.odometerEnd ?? 0,
+      maxFuelUp._max.odometer ?? 0,
+      maxService._max.odometer ?? 0,
+    );
+
+    if (trueMax > vehicle.currentOdometer) {
       await prisma.vehicle.update({
         where: { id: vehicle.id },
-        data: { currentOdometer: data.odometer },
+        data: { currentOdometer: trueMax },
       });
     }
 

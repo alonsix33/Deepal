@@ -203,6 +203,16 @@ export const useStore = create<AppState>()(
             createdAt: l.createdAt,
           }));
 
+          // Compute true max odometer from all sources — the DB vehicle record
+          // can be stale if retroactive entries were added after newer ones.
+          const trueCurrentOdometer = Math.max(
+            vehicleData?.currentOdometer ?? 0,
+            ...odometerLogs.map((l) => l.odometer),
+            ...charges.map((c) => c.odometerEnd ?? 0),
+            ...fuelUps.map((f) => f.odometer),
+            ...services.map((s) => s.odometer),
+          );
+
           set({
             vehicle: vehicleData
               ? {
@@ -216,7 +226,7 @@ export const useStore = create<AppState>()(
                   purchaseDate: vehicleData.purchaseDate.split("T")[0],
                   purchasePrice: vehicleData.purchasePrice,
                   odometerStart: vehicleData.odometerStart,
-                  currentOdometer: vehicleData.currentOdometer,
+                  currentOdometer: trueCurrentOdometer,
                 }
               : defaultVehicle,
             charges,
@@ -633,14 +643,23 @@ export const useStore = create<AppState>()(
             notes: response.notes,
             createdAt: response.createdAt,
           };
-          set((state) => ({
-            odometerLogs: [newLog, ...state.odometerLogs],
-            vehicle: {
-              ...state.vehicle,
-              currentOdometer: Math.max(state.vehicle.currentOdometer, data.odometer),
-            },
-            isLoading: false,
-          }));
+          set((state) => {
+            const updatedLogs = [newLog, ...state.odometerLogs];
+            // Recompute true max across all sources so a retroactive (older) entry
+            // never lowers the displayed current odometer.
+            const trueMax = Math.max(
+              ...updatedLogs.map((l) => l.odometer),
+              ...state.charges.map((c) => c.odometerEnd ?? 0),
+              ...state.fuelUps.map((f) => f.odometer),
+              ...state.services.map((s) => s.odometer),
+              state.vehicle.odometerStart,
+            );
+            return {
+              odometerLogs: updatedLogs,
+              vehicle: { ...state.vehicle, currentOdometer: trueMax },
+              isLoading: false,
+            };
+          });
         } catch (error) {
           console.error("Error adding odometer log:", error);
           set({ error: "Error al registrar odómetro", isLoading: false });
