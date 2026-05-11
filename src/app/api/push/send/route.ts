@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const subscriptions = await prisma.pushSubscription.findMany();
 
     const payload = JSON.stringify({
-      title: title || "Deepal S05 Tracker",
+      title: title || "Electra",
       body: body || "Tienes una notificacion",
       icon: icon || "/icons/icon.svg",
       badge: "/icons/icon.svg",
