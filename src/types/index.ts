@@ -95,6 +95,11 @@ export interface Settings {
   electricityRateKwh: number;
   batteryCapacity: number;
   chargingEfficiency: number;
+  // Eco-metric parameters (local-only, configurable by user)
+  gasolineRefConsumptionL100km: number; // Reference gasoline SUV, default 7.5
+  gasolinePricePEN: number;             // Gasoline price S//L, default 5.87
+  co2GridIntensityGkwh: number;         // Peru grid CO2 intensity g/kWh, default 218
+  evConsumptionKwh100km: number;        // S05 consumption kWh/100km, default 15.1
 }
 
 export interface DashboardStats {

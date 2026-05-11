@@ -16,6 +16,7 @@ import { ArrowLeft, Zap, Save, Loader2,
 import Link from "next/link";
 import { SliderRow } from "@/components/ui/slider-row";
 import { BatteryBar } from "@/components/ui/battery-bar";
+import { todayLocalISO } from "@/lib/utils";
 
 export default function NewChargePage() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function NewChargePage() {
   const rateKwh = settings.electricityRateKwh || 0.6861;
 
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split("T")[0],
+    date: todayLocalISO(),
     location: "home",
     customLocation: "",
     chargeType: "AC_7kW" as Charge["chargeType"],

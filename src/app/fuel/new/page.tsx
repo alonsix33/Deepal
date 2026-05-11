@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { todayLocalISO } from "@/lib/utils";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/store/useStore";
@@ -17,7 +18,7 @@ export default function NewFuelPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split("T")[0],
+    date: todayLocalISO(),
     odometer: vehicle.currentOdometer.toString(),
     gallons: "",
     costPEN: "",

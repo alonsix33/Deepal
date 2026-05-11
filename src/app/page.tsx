@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useStore } from "@/store/useStore";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ActivityList } from "@/components/dashboard/ActivityList";
@@ -9,11 +10,12 @@ import {
   Zap,
   Fuel,
   Wrench,
-  Plus,
   Gauge,
   ParkingCircle,
   TrendingUp,
+  Leaf,
 } from "lucide-react";
+import { computeEcoMetrics } from "@/lib/metrics";
 import Link from "next/link";
 
 const stagger: Variants = {
@@ -33,6 +35,7 @@ export default function HomePage() {
   const { charges, fuelUps, services, getDashboardStats, settings } =
     useStore();
   const stats = getDashboardStats();
+  const eco = useMemo(() => computeEcoMetrics(charges, settings), [charges, settings]);
 
   const totalParkingCost = charges.reduce((s, c) => s + c.parkingCostPEN, 0);
   const totalEnergyCost = stats.totalChargeCost + stats.totalFuelCost;
@@ -264,9 +267,37 @@ export default function HomePage() {
           </div>
         </motion.div>
 
-        {/* ── Quick Stats ── */}
+        {/* ── Eco Metrics (2×2) ── */}
         <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
-          {/* Cost per km */}
+          {/* 1. Ahorro vs gasolina */}
+          <div className="card-outlined p-4">
+            <div
+              className="w-9 h-9 rounded-[var(--shape-md)] flex items-center justify-center mb-3"
+              style={{
+                background: "var(--md-tertiary-container)",
+                color: "var(--md-on-tertiary-container)",
+              }}
+            >
+              <TrendingUp className="w-4 h-4" />
+            </div>
+            <p
+              className="text-xl font-bold tracking-tight leading-tight"
+              style={{
+                color: eco.savedVsGasolinePEN >= 0 ? "var(--md-tertiary)" : "var(--md-error)",
+              }}
+            >
+              {eco.savedVsGasolinePEN >= 0 ? "+" : ""}
+              {formatCurrency(eco.savedVsGasolinePEN)}
+            </p>
+            <p className="text-[11px] mt-0.5" style={{ color: "var(--md-on-surface)" }}>
+              Ahorro vs gasolina
+            </p>
+            <p className="text-[10px] mt-0.5" style={{ color: "var(--md-on-surface-variant)", opacity: 0.7 }}>
+              vs SUV ~{settings.gasolineRefConsumptionL100km} L/100km
+            </p>
+          </div>
+
+          {/* 2. Costo promedio por kWh */}
           <div className="card-outlined p-4">
             <div
               className="w-9 h-9 rounded-[var(--shape-md)] flex items-center justify-center mb-3"
@@ -275,56 +306,69 @@ export default function HomePage() {
                 color: "var(--md-on-primary-container)",
               }}
             >
-              <Gauge className="w-4.5 h-4.5" />
+              <Zap className="w-4 h-4" />
             </div>
             <p
-              className="text-2xl font-bold tracking-tight"
+              className="text-xl font-bold tracking-tight leading-tight"
               style={{ color: "var(--md-on-surface)" }}
             >
-              {formatCurrency(stats.averageCostPerKm)}
+              {eco.avgCostPerKwh > 0 ? `S/ ${eco.avgCostPerKwh.toFixed(3)}` : "—"}
             </p>
-            <p
-              className="text-[11px] mt-0.5"
-              style={{ color: "var(--md-on-surface-variant)" }}
-            >
-              Costo por km
+            <p className="text-[11px] mt-0.5" style={{ color: "var(--md-on-surface)" }}>
+              Costo por kWh
             </p>
-            <p
-              className="text-[10px] mt-0.5 font-medium"
-              style={{ color: "var(--md-on-surface-variant)", opacity: 0.7 }}
-            >
-              {formatKm(stats.totalKmDriven)} totales
+            <p className="text-[10px] mt-0.5" style={{ color: "var(--md-on-surface-variant)", opacity: 0.7 }}>
+              Ref. casa: S/ {settings.electricityRateKwh.toFixed(4)}
             </p>
           </div>
 
-          {/* Next service */}
+          {/* 3. CO₂ evitado */}
           <div className="card-outlined p-4">
             <div
               className="w-9 h-9 rounded-[var(--shape-md)] flex items-center justify-center mb-3"
               style={{
-                background: "var(--color-service-container)",
-                color: "var(--color-service)",
+                background: "var(--md-tertiary-container)",
+                color: "var(--md-on-tertiary-container)",
               }}
             >
-              <Wrench className="w-4.5 h-4.5" />
+              <Leaf className="w-4 h-4" />
             </div>
             <p
-              className="text-2xl font-bold tracking-tight"
+              className="text-xl font-bold tracking-tight leading-tight"
+              style={{ color: "var(--md-tertiary)" }}
+            >
+              {eco.co2AvoidedKg.toFixed(1)} kg
+            </p>
+            <p className="text-[11px] mt-0.5" style={{ color: "var(--md-on-surface)" }}>
+              CO₂ evitado
+            </p>
+            <p className="text-[10px] mt-0.5" style={{ color: "var(--md-on-surface-variant)", opacity: 0.7 }}>
+              ≈ {eco.equivalentTrees.toFixed(1)} árbol{Math.round(eco.equivalentTrees) !== 1 ? "es" : ""}/año
+            </p>
+          </div>
+
+          {/* 4. Costo total por km */}
+          <div className="card-outlined p-4">
+            <div
+              className="w-9 h-9 rounded-[var(--shape-md)] flex items-center justify-center mb-3"
+              style={{
+                background: "var(--md-secondary-container)",
+                color: "var(--md-on-secondary-container)",
+              }}
+            >
+              <Gauge className="w-4 h-4" />
+            </div>
+            <p
+              className="text-xl font-bold tracking-tight leading-tight"
               style={{ color: "var(--md-on-surface)" }}
             >
-              {formatKm(stats.nextServiceKm)}
+              {formatCurrency(stats.averageCostPerKm)}
             </p>
-            <p
-              className="text-[11px] mt-0.5"
-              style={{ color: "var(--md-on-surface-variant)" }}
-            >
-              Próximo servicio
+            <p className="text-[11px] mt-0.5" style={{ color: "var(--md-on-surface)" }}>
+              Costo por km
             </p>
-            <p
-              className="text-[10px] mt-0.5 font-medium"
-              style={{ color: "var(--md-on-surface-variant)", opacity: 0.7 }}
-            >
-              km restantes
+            <p className="text-[10px] mt-0.5" style={{ color: "var(--md-on-surface-variant)", opacity: 0.7 }}>
+              {formatKm(stats.totalKmDriven)} totales
             </p>
           </div>
         </motion.div>
