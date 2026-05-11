@@ -27,6 +27,7 @@ import {
   Line,
   Legend,
   ComposedChart,
+  ReferenceLine,
 } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -139,6 +140,30 @@ export default function AnalyticsPage() {
       months[key].kwh += charge.kwhCharged;
     });
     return Object.keys(months).sort().map((k) => ({ month: months[k].month, kwh: months[k].kwh }));
+  }, [charges]);
+
+  const monthlyCostPerKwhData = useMemo(() => {
+    const months: Record<string, { month: string; totalCost: number; totalKwh: number }> = {};
+    charges.forEach((c) => {
+      const key = c.date.slice(0, 7);
+      if (!months[key]) {
+        const yr = parseInt(key.slice(0, 4), 10);
+        const mo = parseInt(key.slice(5, 7), 10) - 1;
+        months[key] = {
+          month: new Date(yr, mo, 1).toLocaleDateString("es-PE", { month: "short", year: "2-digit" }),
+          totalCost: 0,
+          totalKwh: 0,
+        };
+      }
+      months[key].totalCost += c.totalCost;
+      months[key].totalKwh += c.kwhCharged;
+    });
+    return Object.keys(months).sort().map((k) => ({
+      month: months[k].month,
+      costPerKwh: months[k].totalKwh > 0
+        ? parseFloat((months[k].totalCost / months[k].totalKwh).toFixed(3))
+        : 0,
+    }));
   }, [charges]);
 
   const monthlySavingsData = useMemo(
@@ -451,43 +476,40 @@ export default function AnalyticsPage() {
                 </div>
               </div>
 
-              {/* Cost per kWh over time */}
-              {charges.length > 1 && (
+              {/* Monthly cost per kWh vs home rate */}
+              {monthlyCostPerKwhData.length > 0 && (
                 <div className="card-filled p-4">
                   <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--md-on-surface)" }}>
-                    Costo por kWh por Sesión
+                    Costo Promedio por kWh · Mensual
                   </h3>
                   <p className="text-xs mb-4" style={{ color: "var(--md-on-surface-variant)" }}>
-                    Solo costo energía, excluye estacionamiento
+                    Incluye parking — costo real por kWh cargado
                   </p>
                   <div className="h-[200px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={[...charges]
-                          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                          .map((c) => ({
-                            date: new Date(c.date).toLocaleDateString("es-PE", { day: "2-digit", month: "short" }),
-                            costKwh: c.kwhCharged > 0
-                              ? (c.totalCost - c.parkingCostPEN) / c.kwhCharged
-                              : null,
-                          }))}
-                        margin={{ left: -10 }}
-                      >
+                      <BarChart data={monthlyCostPerKwhData} margin={{ left: -10 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--md-outline-variant)" />
-                        <XAxis dataKey="date" tick={axisStyle} interval="preserveStartEnd" />
+                        <XAxis dataKey="month" tick={axisStyle} />
                         <YAxis tick={axisStyle} />
-                        <Tooltip content={<MD3Tooltip formatter={(v) => `S/ ${v.toFixed(3)}`} />} />
-                        <Line
-                          type="monotone"
-                          dataKey="costKwh"
-                          name="S//kWh"
-                          stroke={colors.secondary}
-                          strokeWidth={2}
-                          connectNulls
-                          dot={{ fill: colors.secondary, r: 4, strokeWidth: 0 }}
-                          activeDot={{ r: 6, strokeWidth: 0 }}
+                        <Tooltip content={<MD3Tooltip formatter={(v) => `S/ ${v.toFixed(3)}/kWh`} />} />
+                        <ReferenceLine
+                          y={settings.electricityRateKwh}
+                          stroke={colors.primary}
+                          strokeDasharray="4 3"
+                          label={{
+                            value: `Casa S/ ${settings.electricityRateKwh.toFixed(4)}`,
+                            position: "insideTopRight",
+                            fontSize: 10,
+                            fill: colors.primary,
+                          }}
                         />
-                      </LineChart>
+                        <Bar
+                          dataKey="costPerKwh"
+                          name="S//kWh"
+                          fill={colors.secondary}
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
