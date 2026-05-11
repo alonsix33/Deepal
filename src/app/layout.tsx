@@ -20,14 +20,14 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Deepal S05 Tracker",
+  title: "Electra",
   description:
-    "Controla consumos, costos y mantenimiento de tu Deepal S05 REEV",
+    "Electra · Deepal S05 REEV — cargas eléctricas, combustible, mantenimiento y eco-métricas",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Deepal S05",
+    title: "Electra",
     startupImage: "/icons/icon.svg",
   },
   formatDetection: {

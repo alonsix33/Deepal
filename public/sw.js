@@ -1,4 +1,4 @@
-const CACHE_NAME = "deepal-s05-v2";
+const CACHE_NAME = "electra-v1";
 const OFFLINE_URL = "/offline.html";
 
 const PRECACHE_ASSETS = [
