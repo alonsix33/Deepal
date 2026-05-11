@@ -795,17 +795,16 @@ export const useStore = create<AppState>()(
       migrate: (persistedState: unknown, fromVersion: number) => {
         const state = persistedState as Record<string, unknown>;
         if (fromVersion < 4) {
-          // Inject eco-metric settings defaults for users upgrading from v3
-          const settings = (state.settings ?? {}) as Record<string, unknown>;
+          const s = (state.settings ?? {}) as Record<string, unknown>;
           state.settings = {
-            ...settings,
-            gasolineRefConsumptionL100km: settings.gasolineRefConsumptionL100km ?? 7.5,
-            gasolinePricePEN: settings.gasolinePricePEN ?? 5.87,
-            co2GridIntensityGkwh: settings.co2GridIntensityGkwh ?? 218,
-            evConsumptionKwh100km: settings.evConsumptionKwh100km ?? 15.1,
+            ...s,
+            gasolineRefConsumptionL100km: s.gasolineRefConsumptionL100km ?? 7.5,
+            gasolinePricePEN: s.gasolinePricePEN ?? 5.87,
+            co2GridIntensityGkwh: s.co2GridIntensityGkwh ?? 218,
+            evConsumptionKwh100km: s.evConsumptionKwh100km ?? 15.1,
           };
         }
-        return state;
+        return state as unknown as AppState;
       },
       partialize: (state) => ({
         vehicle: state.vehicle,

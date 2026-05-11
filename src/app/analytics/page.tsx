@@ -121,8 +121,7 @@ export default function AnalyticsPage() {
 
     return Object.keys(months)
       .sort()
-      .map((k) => ({ month: months[k].month, ...months[k] }))
-      .map(({ month, electric, fuel, maintenance }) => ({ month, electric, fuel, maintenance }));
+      .map((k) => ({ month: months[k].month, electric: months[k].electric, fuel: months[k].fuel, maintenance: months[k].maintenance }));
   }, [charges, fuelUps, services]);
 
   const kwhData = useMemo(() => {
