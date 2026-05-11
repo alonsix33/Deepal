@@ -22,11 +22,9 @@ export function computeEcoMetrics(charges: Charge[], settings: Settings): EcoMet
   } = settings;
 
   const totalKwhCharged = charges.reduce((s, c) => s + c.kwhCharged, 0);
-  // Guard against legacy data where parkingCostPEN > totalCost (isFree=true edge case)
-  const totalChargingCostOnly = charges.reduce(
-    (s, c) => s + Math.max(0, c.totalCost - c.parkingCostPEN),
-    0
-  );
+  // Total cost includes parking — parking paid at a "free" charger is still
+  // part of the real cost of that charging session.
+  const totalChargingCostOnly = charges.reduce((s, c) => s + c.totalCost, 0);
 
   // Net kWh delivered to motor after charging losses
   const kwhNet = totalKwhCharged * chargingEfficiency;
@@ -103,7 +101,7 @@ export function computeMonthlySavings(
     const kwhNet = c.kwhCharged * chargingEfficiency;
     const estKm = evConsumptionKwh100km > 0 ? kwhNet / (evConsumptionKwh100km / 100) : 0;
     const gasCost = estKm * (gasolineRefConsumptionL100km / 100) * gasolinePricePEN;
-    const chargeCost = Math.max(0, c.totalCost - c.parkingCostPEN);
+    const chargeCost = c.totalCost;
     months[yearMonth].savings += gasCost - chargeCost;
 
     const co2Grid = c.kwhCharged * (co2GridIntensityGkwh / 1000);
