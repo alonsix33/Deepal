@@ -54,7 +54,9 @@ import {
   Wrench,
   ChevronDown,
   ChevronUp,
+  Lock,
 } from "lucide-react";
+import { computeEffectiveGasolinePricePEN } from "@/lib/metrics";
 
 type OdomEntry = {
   date: string;
@@ -323,6 +325,11 @@ export default function SettingsPage() {
     }
   };
 
+  const effectiveGasolinePrice = useMemo(
+    () => computeEffectiveGasolinePricePEN(fuelUps, settings.gasolinePricePEN ?? 5.87),
+    [fuelUps, settings.gasolinePricePEN]
+  );
+
   const allOdometerEntries = useMemo((): OdomEntry[] => {
     const entries: OdomEntry[] = [
       ...odometerLogs.map((l) => ({ date: l.date, odometer: l.odometer, source: "manual" as const, notes: l.notes })),
@@ -517,19 +524,38 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="gasolinePrice">Precio gasolina (S//L)</Label>
-                <Input
-                  id="gasolinePrice"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  inputMode="decimal"
-                  value={settings.gasolinePricePEN ?? 5.87}
-                  onChange={(e) =>
-                    updateSettings({ gasolinePricePEN: parseFloat(e.target.value) || 5.87 })
-                  }
-                />
+                {fuelUps.length > 0 ? (
+                  <div
+                    className="flex items-center gap-2 h-10 px-3 rounded-md border"
+                    style={{
+                      background: "var(--md-surface-container-highest)",
+                      borderColor: "var(--md-outline-variant)",
+                      color: "var(--md-on-surface-variant)",
+                    }}
+                  >
+                    <Lock className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--md-outline)" }} />
+                    <span className="font-semibold text-sm" style={{ color: "var(--md-on-surface)" }}>
+                      S/ {effectiveGasolinePrice.toFixed(4)}
+                    </span>
+                    <span className="text-xs">/L</span>
+                  </div>
+                ) : (
+                  <Input
+                    id="gasolinePrice"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    inputMode="decimal"
+                    value={settings.gasolinePricePEN ?? 5.87}
+                    onChange={(e) =>
+                      updateSettings({ gasolinePricePEN: parseFloat(e.target.value) || 5.87 })
+                    }
+                  />
+                )}
                 <p className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
-                  Gasohol 90 actual en Lima
+                  {fuelUps.length > 0
+                    ? `Calculado de ${fuelUps.length} recarga${fuelUps.length !== 1 ? "s" : ""} · S/ ${(effectiveGasolinePrice * 3.785411784).toFixed(2)}/gal`
+                    : "Sin recargas — ingresa el precio manualmente"}
                 </p>
               </div>
             </div>

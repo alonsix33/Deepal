@@ -35,7 +35,7 @@ export default function HomePage() {
   const { charges, fuelUps, services, getDashboardStats, settings } =
     useStore();
   const stats = getDashboardStats();
-  const eco = useMemo(() => computeEcoMetrics(charges, settings), [charges, settings]);
+  const eco = useMemo(() => computeEcoMetrics(charges, fuelUps, settings), [charges, fuelUps, settings]);
 
   const totalParkingCost = charges.reduce((s, c) => s + c.parkingCostPEN, 0);
   const totalEnergyCost = stats.totalChargeCost + stats.totalFuelCost;

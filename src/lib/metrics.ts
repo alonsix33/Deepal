@@ -1,4 +1,4 @@
-import type { Charge, Settings } from "@/types";
+import type { Charge, FuelUp, Settings } from "@/types";
 
 export interface EcoMetrics {
   estimatedElectricKm: number;
@@ -10,9 +10,25 @@ export interface EcoMetrics {
   avgCostPerKwh: number;
   totalKwhCharged: number;
   totalChargingCostOnly: number;
+  effectiveGasolinePricePEN: number;
 }
 
-export function computeEcoMetrics(charges: Charge[], settings: Settings): EcoMetrics {
+// Weighted average price per litre from actual fuelUp records.
+// Falls back to the manual setting when no records exist.
+export function computeEffectiveGasolinePricePEN(
+  fuelUps: FuelUp[],
+  fallbackPricePEN: number
+): number {
+  const totalCostPEN = fuelUps.reduce((s, f) => s + f.costPEN, 0);
+  const totalLitres = fuelUps.reduce((s, f) => s + f.gallons * 3.785411784, 0);
+  return totalLitres > 0 ? totalCostPEN / totalLitres : fallbackPricePEN;
+}
+
+export function computeEcoMetrics(
+  charges: Charge[],
+  fuelUps: FuelUp[],
+  settings: Settings
+): EcoMetrics {
   const {
     chargingEfficiency,
     gasolineRefConsumptionL100km,
@@ -20,6 +36,8 @@ export function computeEcoMetrics(charges: Charge[], settings: Settings): EcoMet
     co2GridIntensityGkwh,
     evConsumptionKwh100km,
   } = settings;
+
+  const effectiveGasolinePricePEN = computeEffectiveGasolinePricePEN(fuelUps, gasolinePricePEN);
 
   const totalKwhCharged = charges.reduce((s, c) => s + c.kwhCharged, 0);
   // Total cost includes parking — parking paid at a "free" charger is still
@@ -35,7 +53,7 @@ export function computeEcoMetrics(charges: Charge[], settings: Settings): EcoMet
 
   // What those km would have cost in gasoline with a reference SUV
   const gasolineCostEqPEN =
-    estimatedElectricKm * (gasolineRefConsumptionL100km / 100) * gasolinePricePEN;
+    estimatedElectricKm * (gasolineRefConsumptionL100km / 100) * effectiveGasolinePricePEN;
 
   const savedVsGasolinePEN = gasolineCostEqPEN - totalChargingCostOnly;
 
@@ -59,6 +77,7 @@ export function computeEcoMetrics(charges: Charge[], settings: Settings): EcoMet
     avgCostPerKwh,
     totalKwhCharged,
     totalChargingCostOnly,
+    effectiveGasolinePricePEN,
   };
 }
 
@@ -71,6 +90,7 @@ export interface MonthlySavingsPoint {
 
 export function computeMonthlySavings(
   charges: Charge[],
+  fuelUps: FuelUp[],
   settings: Settings
 ): MonthlySavingsPoint[] {
   const {
@@ -80,6 +100,8 @@ export function computeMonthlySavings(
     co2GridIntensityGkwh,
     evConsumptionKwh100km,
   } = settings;
+
+  const effectiveGasolinePricePEN = computeEffectiveGasolinePricePEN(fuelUps, gasolinePricePEN);
 
   // Use string slicing on "YYYY-MM-DD" to avoid UTC-vs-local timezone issues
   const months: Record<
@@ -100,9 +122,8 @@ export function computeMonthlySavings(
     }
     const kwhNet = c.kwhCharged * chargingEfficiency;
     const estKm = evConsumptionKwh100km > 0 ? kwhNet / (evConsumptionKwh100km / 100) : 0;
-    const gasCost = estKm * (gasolineRefConsumptionL100km / 100) * gasolinePricePEN;
-    const chargeCost = c.totalCost;
-    months[yearMonth].savings += gasCost - chargeCost;
+    const gasCost = estKm * (gasolineRefConsumptionL100km / 100) * effectiveGasolinePricePEN;
+    months[yearMonth].savings += gasCost - c.totalCost;
 
     const co2Grid = c.kwhCharged * (co2GridIntensityGkwh / 1000);
     const co2Gas = estKm * (gasolineRefConsumptionL100km / 100) * 2.31;
