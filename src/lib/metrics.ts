@@ -4,6 +4,8 @@ export interface EcoMetrics {
   estimatedElectricKm: number;
   savedVsGasolinePEN: number;
   co2AvoidedKg: number;
+  co2IfGasolineKg: number;
+  co2FromGridKg: number;
   equivalentTrees: number;
   avgCostPerKwh: number;
   totalKwhCharged: number;
@@ -20,7 +22,11 @@ export function computeEcoMetrics(charges: Charge[], settings: Settings): EcoMet
   } = settings;
 
   const totalKwhCharged = charges.reduce((s, c) => s + c.kwhCharged, 0);
-  const totalChargingCostOnly = charges.reduce((s, c) => s + c.totalCost - c.parkingCostPEN, 0);
+  // Guard against legacy data where parkingCostPEN > totalCost (isFree=true edge case)
+  const totalChargingCostOnly = charges.reduce(
+    (s, c) => s + Math.max(0, c.totalCost - c.parkingCostPEN),
+    0
+  );
 
   // Net kWh delivered to motor after charging losses
   const kwhNet = totalKwhCharged * chargingEfficiency;
@@ -37,8 +43,7 @@ export function computeEcoMetrics(charges: Charge[], settings: Settings): EcoMet
 
   // CO2: grid emissions vs gasoline equivalent (2.31 kg CO2/L)
   const co2FromGridKg = totalKwhCharged * (co2GridIntensityGkwh / 1000);
-  const co2IfGasolineKg =
-    estimatedElectricKm * (gasolineRefConsumptionL100km / 100) * 2.31;
+  const co2IfGasolineKg = estimatedElectricKm * (gasolineRefConsumptionL100km / 100) * 2.31;
   const co2AvoidedKg = Math.max(0, co2IfGasolineKg - co2FromGridKg);
 
   // Trees: 1 adult tree absorbs ~22 kg CO2/year
@@ -50,6 +55,8 @@ export function computeEcoMetrics(charges: Charge[], settings: Settings): EcoMet
     estimatedElectricKm,
     savedVsGasolinePEN,
     co2AvoidedKg,
+    co2IfGasolineKg,
+    co2FromGridKg,
     equivalentTrees,
     avgCostPerKwh,
     totalKwhCharged,
@@ -62,7 +69,6 @@ export interface MonthlySavingsPoint {
   monthlySavings: number;
   cumulativeSavings: number;
   co2Avoided: number;
-  sortKey: number;
 }
 
 export function computeMonthlySavings(
@@ -77,37 +83,38 @@ export function computeMonthlySavings(
     evConsumptionKwh100km,
   } = settings;
 
+  // Use string slicing on "YYYY-MM-DD" to avoid UTC-vs-local timezone issues
   const months: Record<
     string,
-    { month: string; savings: number; co2Avoided: number; sortKey: number }
+    { month: string; savings: number; co2Avoided: number }
   > = {};
 
   charges.forEach((c) => {
-    const d = new Date(c.date);
-    const key = `${d.getFullYear()}-${String(d.getMonth()).padStart(2, "0")}`;
-    if (!months[key]) {
-      months[key] = {
-        month: d.toLocaleDateString("es-PE", { month: "short", year: "2-digit" }),
-        savings: 0,
-        co2Avoided: 0,
-        sortKey: d.getFullYear() * 100 + d.getMonth(),
-      };
+    const yearMonth = c.date.slice(0, 7); // "YYYY-MM"
+    const year = parseInt(c.date.slice(0, 4), 10);
+    const monthIdx = parseInt(c.date.slice(5, 7), 10) - 1; // 0-based
+    if (!months[yearMonth]) {
+      const label = new Date(year, monthIdx, 1).toLocaleDateString("es-PE", {
+        month: "short",
+        year: "2-digit",
+      });
+      months[yearMonth] = { month: label, savings: 0, co2Avoided: 0 };
     }
     const kwhNet = c.kwhCharged * chargingEfficiency;
     const estKm = evConsumptionKwh100km > 0 ? kwhNet / (evConsumptionKwh100km / 100) : 0;
     const gasCost = estKm * (gasolineRefConsumptionL100km / 100) * gasolinePricePEN;
-    const chargeCost = c.totalCost - c.parkingCostPEN;
-    months[key].savings += gasCost - chargeCost;
+    const chargeCost = Math.max(0, c.totalCost - c.parkingCostPEN);
+    months[yearMonth].savings += gasCost - chargeCost;
 
     const co2Grid = c.kwhCharged * (co2GridIntensityGkwh / 1000);
     const co2Gas = estKm * (gasolineRefConsumptionL100km / 100) * 2.31;
-    months[key].co2Avoided += Math.max(0, co2Gas - co2Grid);
+    months[yearMonth].co2Avoided += Math.max(0, co2Gas - co2Grid);
   });
 
-  const sorted = Object.values(months).sort((a, b) => a.sortKey - b.sortKey);
+  const sorted = Object.keys(months).sort().map((k) => months[k]);
   let cumulative = 0;
-  return sorted.map(({ month, savings, co2Avoided, sortKey }) => {
+  return sorted.map(({ month, savings, co2Avoided }) => {
     cumulative += savings;
-    return { month, monthlySavings: savings, cumulativeSavings: cumulative, co2Avoided, sortKey };
+    return { month, monthlySavings: savings, cumulativeSavings: cumulative, co2Avoided };
   });
 }

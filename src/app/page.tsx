@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useStore } from "@/store/useStore";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ActivityList } from "@/components/dashboard/ActivityList";
@@ -34,7 +35,7 @@ export default function HomePage() {
   const { charges, fuelUps, services, getDashboardStats, settings } =
     useStore();
   const stats = getDashboardStats();
-  const eco = computeEcoMetrics(charges, settings);
+  const eco = useMemo(() => computeEcoMetrics(charges, settings), [charges, settings]);
 
   const totalParkingCost = charges.reduce((s, c) => s + c.parkingCostPEN, 0);
   const totalEnergyCost = stats.totalChargeCost + stats.totalFuelCost;
@@ -342,7 +343,7 @@ export default function HomePage() {
               CO₂ evitado
             </p>
             <p className="text-[10px] mt-0.5" style={{ color: "var(--md-on-surface-variant)", opacity: 0.7 }}>
-              ≈ {eco.equivalentTrees.toFixed(1)} árbol{eco.equivalentTrees !== 1 ? "es" : ""}/año
+              ≈ {eco.equivalentTrees.toFixed(1)} árbol{Math.round(eco.equivalentTrees) !== 1 ? "es" : ""}/año
             </p>
           </div>
 

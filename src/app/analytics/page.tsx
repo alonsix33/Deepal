@@ -96,49 +96,50 @@ export default function AnalyticsPage() {
   const { charges, fuelUps, services, getDashboardStats, settings } = useStore();
   const stats = getDashboardStats();
   const colors = useChartColors();
-  const eco = computeEcoMetrics(charges, settings);
+  const eco = useMemo(() => computeEcoMetrics(charges, settings), [charges, settings]);
 
   const monthlyData = useMemo(() => {
-    const months: Record<string, { month: string; electric: number; fuel: number; maintenance: number; sortKey: number }> = {};
+    const months: Record<string, { month: string; electric: number; fuel: number; maintenance: number }> = {};
 
-    const upsert = (date: Date, field: "electric" | "fuel" | "maintenance", amount: number) => {
-      const key = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, "0")}`;
+    // Use "YYYY-MM" key from string to avoid UTC-vs-local timezone off-by-one
+    const upsert = (dateStr: string, field: "electric" | "fuel" | "maintenance", amount: number) => {
+      const key = dateStr.slice(0, 7);
       if (!months[key]) {
+        const yr = parseInt(key.slice(0, 4), 10);
+        const mo = parseInt(key.slice(5, 7), 10) - 1;
         months[key] = {
-          month: date.toLocaleDateString("es-PE", { month: "short", year: "2-digit" }),
+          month: new Date(yr, mo, 1).toLocaleDateString("es-PE", { month: "short", year: "2-digit" }),
           electric: 0, fuel: 0, maintenance: 0,
-          sortKey: date.getFullYear() * 100 + date.getMonth(),
         };
       }
       months[key][field] += amount;
     };
 
-    charges.forEach((c) => upsert(new Date(c.date), "electric", c.totalCost));
-    fuelUps.forEach((f) => upsert(new Date(f.date), "fuel", f.costPEN));
-    services.forEach((s) => upsert(new Date(s.date), "maintenance", s.costPEN));
+    charges.forEach((c) => upsert(c.date, "electric", c.totalCost));
+    fuelUps.forEach((f) => upsert(f.date, "fuel", f.costPEN));
+    services.forEach((s) => upsert(s.date, "maintenance", s.costPEN));
 
-    return Object.values(months)
-      .sort((a, b) => a.sortKey - b.sortKey)
+    return Object.keys(months)
+      .sort()
+      .map((k) => ({ month: months[k].month, ...months[k] }))
       .map(({ month, electric, fuel, maintenance }) => ({ month, electric, fuel, maintenance }));
   }, [charges, fuelUps, services]);
 
   const kwhData = useMemo(() => {
-    const months: Record<string, { month: string; kwh: number; sortKey: number }> = {};
+    const months: Record<string, { month: string; kwh: number }> = {};
     charges.forEach((charge) => {
-      const d = new Date(charge.date);
-      const key = `${d.getFullYear()}-${String(d.getMonth()).padStart(2, "0")}`;
+      const key = charge.date.slice(0, 7);
       if (!months[key]) {
+        const yr = parseInt(key.slice(0, 4), 10);
+        const mo = parseInt(key.slice(5, 7), 10) - 1;
         months[key] = {
-          month: d.toLocaleDateString("es-PE", { month: "short" }),
+          month: new Date(yr, mo, 1).toLocaleDateString("es-PE", { month: "short" }),
           kwh: 0,
-          sortKey: d.getFullYear() * 100 + d.getMonth(),
         };
       }
       months[key].kwh += charge.kwhCharged;
     });
-    return Object.values(months)
-      .sort((a, b) => a.sortKey - b.sortKey)
-      .map(({ month, kwh }) => ({ month, kwh }));
+    return Object.keys(months).sort().map((k) => ({ month: months[k].month, kwh: months[k].kwh }));
   }, [charges]);
 
   const monthlySavingsData = useMemo(
@@ -361,7 +362,7 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="pb-1">
                     <p className="text-lg font-semibold" style={{ color: "var(--md-on-surface)" }}>
-                      ≈ {eco.equivalentTrees.toFixed(1)} árbol{eco.equivalentTrees !== 1 ? "es" : ""}
+                      ≈ {eco.equivalentTrees.toFixed(1)} árbol{Math.round(eco.equivalentTrees) !== 1 ? "es" : ""}
                     </p>
                     <p className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
                       absorbidos/año
@@ -375,13 +376,13 @@ export default function AnalyticsPage() {
                     <div className="flex justify-between text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
                       <span>CO₂ emitido (red eléctrica)</span>
                       <span className="font-medium" style={{ color: "var(--md-on-surface)" }}>
-                        {(eco.totalKwhCharged * (settings.co2GridIntensityGkwh / 1000)).toFixed(1)} kg
+                        {eco.co2FromGridKg.toFixed(1)} kg
                       </span>
                     </div>
                     <div className="flex justify-between text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
                       <span>CO₂ equiv. gasolina (referencia)</span>
                       <span className="font-medium" style={{ color: "var(--md-on-surface)" }}>
-                        {(eco.co2AvoidedKg + eco.totalKwhCharged * (settings.co2GridIntensityGkwh / 1000)).toFixed(1)} kg
+                        {eco.co2IfGasolineKg.toFixed(1)} kg
                       </span>
                     </div>
                     <div

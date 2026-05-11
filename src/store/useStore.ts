@@ -791,7 +791,22 @@ export const useStore = create<AppState>()(
     }),
     {
       name: "deepal-s05-storage",
-      version: 3,
+      version: 4,
+      migrate: (persistedState: unknown, fromVersion: number) => {
+        const state = persistedState as Record<string, unknown>;
+        if (fromVersion < 4) {
+          // Inject eco-metric settings defaults for users upgrading from v3
+          const settings = (state.settings ?? {}) as Record<string, unknown>;
+          state.settings = {
+            ...settings,
+            gasolineRefConsumptionL100km: settings.gasolineRefConsumptionL100km ?? 7.5,
+            gasolinePricePEN: settings.gasolinePricePEN ?? 5.87,
+            co2GridIntensityGkwh: settings.co2GridIntensityGkwh ?? 218,
+            evConsumptionKwh100km: settings.evConsumptionKwh100km ?? 15.1,
+          };
+        }
+        return state;
+      },
       partialize: (state) => ({
         vehicle: state.vehicle,
         charges: state.charges,

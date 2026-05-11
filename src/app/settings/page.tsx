@@ -487,6 +487,91 @@ export default function SettingsPage() {
           </div>
         </GlassCard>
 
+        {/* Eco-Metrics Reference Parameters */}
+        <GlassCard role="region" aria-labelledby="eco-heading">
+          <h2 id="eco-heading" className="font-semibold mb-1 flex items-center gap-2">
+            <Fuel className="w-5 h-5" style={{ color: "var(--color-fuel)" }} aria-hidden="true" />
+            Parámetros de Ahorro
+          </h2>
+          <p className="text-xs mb-4" style={{ color: "var(--md-on-surface-variant)" }}>
+            Usados para calcular el ahorro vs gasolina y CO₂ evitado
+          </p>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="gasolineRef">Referencia gasolina (L/100km)</Label>
+                <Input
+                  id="gasolineRef"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  inputMode="decimal"
+                  value={settings.gasolineRefConsumptionL100km ?? 7.5}
+                  onChange={(e) =>
+                    updateSettings({ gasolineRefConsumptionL100km: parseFloat(e.target.value) || 7.5 })
+                  }
+                />
+                <p className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
+                  SUV gasolina similar (Toyota/Honda)
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gasolinePrice">Precio gasolina (S//L)</Label>
+                <Input
+                  id="gasolinePrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  inputMode="decimal"
+                  value={settings.gasolinePricePEN ?? 5.87}
+                  onChange={(e) =>
+                    updateSettings({ gasolinePricePEN: parseFloat(e.target.value) || 5.87 })
+                  }
+                />
+                <p className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
+                  Gasohol 90 actual en Lima
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="co2Grid">Intensidad CO₂ red (g/kWh)</Label>
+                <Input
+                  id="co2Grid"
+                  type="number"
+                  step="1"
+                  min="0"
+                  inputMode="numeric"
+                  value={settings.co2GridIntensityGkwh ?? 218}
+                  onChange={(e) =>
+                    updateSettings({ co2GridIntensityGkwh: parseFloat(e.target.value) || 218 })
+                  }
+                />
+                <p className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
+                  Red eléctrica Perú 2024
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="evConsumption">Consumo S05 (kWh/100km)</Label>
+                <Input
+                  id="evConsumption"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  inputMode="decimal"
+                  value={settings.evConsumptionKwh100km ?? 15.1}
+                  onChange={(e) =>
+                    updateSettings({ evConsumptionKwh100km: parseFloat(e.target.value) || 15.1 })
+                  }
+                />
+                <p className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
+                  WLTP S05 REEV eléctrico
+                </p>
+              </div>
+            </div>
+          </div>
+        </GlassCard>
+
         {/* Odometer Log */}
         <GlassCard role="region" aria-labelledby="odometer-heading">
           {/* Header with current km */}
