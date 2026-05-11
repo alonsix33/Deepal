@@ -4,12 +4,13 @@ import React, { useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useStore } from "@/store/useStore";
 import { formatCurrency, formatKwh } from "@/lib/utils";
+import { computeEcoMetrics, computeMonthlySavings } from "@/lib/metrics";
 import {
   BarChart3,
   Zap,
   Fuel,
   TrendingUp,
-  PieChart as PieChartIcon,
+  Leaf,
 } from "lucide-react";
 import {
   BarChart,
@@ -25,6 +26,7 @@ import {
   LineChart,
   Line,
   Legend,
+  ComposedChart,
 } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -91,9 +93,10 @@ function MD3Tooltip({ active, payload, label, formatter }: TooltipProps) {
 }
 
 export default function AnalyticsPage() {
-  const { charges, fuelUps, services, getDashboardStats } = useStore();
+  const { charges, fuelUps, services, getDashboardStats, settings } = useStore();
   const stats = getDashboardStats();
   const colors = useChartColors();
+  const eco = computeEcoMetrics(charges, settings);
 
   const monthlyData = useMemo(() => {
     const months: Record<string, { month: string; electric: number; fuel: number; maintenance: number; sortKey: number }> = {};
@@ -119,18 +122,6 @@ export default function AnalyticsPage() {
       .map(({ month, electric, fuel, maintenance }) => ({ month, electric, fuel, maintenance }));
   }, [charges, fuelUps, services]);
 
-  const usageData = useMemo(() => {
-    const totalElectric = charges.reduce((sum, c) => sum + c.totalCost, 0);
-    const totalFuel = fuelUps.reduce((sum, f) => sum + f.costPEN, 0);
-    if (totalElectric === 0 && totalFuel === 0) {
-      return [{ name: "Sin datos", value: 100, color: colors.outline }];
-    }
-    return [
-      { name: "Eléctrico", value: totalElectric, color: colors.primary },
-      { name: "Combustible", value: totalFuel, color: colors.fuel },
-    ].filter((d) => d.value > 0);
-  }, [charges, fuelUps, colors]);
-
   const kwhData = useMemo(() => {
     const months: Record<string, { month: string; kwh: number; sortKey: number }> = {};
     charges.forEach((charge) => {
@@ -149,6 +140,11 @@ export default function AnalyticsPage() {
       .sort((a, b) => a.sortKey - b.sortKey)
       .map(({ month, kwh }) => ({ month, kwh }));
   }, [charges]);
+
+  const monthlySavingsData = useMemo(
+    () => computeMonthlySavings(charges, settings),
+    [charges, settings]
+  );
 
   const locationData = useMemo(() => {
     const locations: Record<string, number> = {};
@@ -188,9 +184,9 @@ export default function AnalyticsPage() {
       iconColor: "var(--md-on-secondary-container)",
     },
     {
-      label: "Uso Eléctrico",
-      value: `${Math.round(stats.electricUsagePercent)}%`,
-      icon: PieChartIcon,
+      label: "Ahorro vs Gasolina",
+      value: `${eco.savedVsGasolinePEN >= 0 ? "+" : ""}${formatCurrency(eco.savedVsGasolinePEN)}`,
+      icon: Leaf,
       iconBg: "var(--md-tertiary-container)",
       iconColor: "var(--md-on-tertiary-container)",
     },
@@ -260,7 +256,7 @@ export default function AnalyticsPage() {
           <Tabs defaultValue="costs" className="space-y-4">
             <TabsList className="grid grid-cols-3 w-full">
               <TabsTrigger value="costs">Costos</TabsTrigger>
-              <TabsTrigger value="usage">Uso</TabsTrigger>
+              <TabsTrigger value="savings">Ahorro</TabsTrigger>
               <TabsTrigger value="charging">Cargas</TabsTrigger>
             </TabsList>
 
@@ -294,79 +290,147 @@ export default function AnalyticsPage() {
               </div>
             </TabsContent>
 
-            {/* Uso */}
-            <TabsContent value="usage" className="space-y-4">
+            {/* Ahorro */}
+            <TabsContent value="savings" className="space-y-4">
+              {/* Cumulative savings chart */}
               <div className="card-filled p-4">
-                <h3
-                  className="font-semibold text-sm mb-4"
-                  style={{ color: "var(--md-on-surface)" }}
-                >
-                  Distribución de Energía
+                <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--md-on-surface)" }}>
+                  Ahorro Acumulado vs Gasolina
                 </h3>
-                <div className="h-[240px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={usageData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={95}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {usageData.map((entry, i) => (
-                          <Cell key={`cell-${i}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<MD3Tooltip formatter={(v) => formatCurrency(v)} />} />
-                      <Legend wrapperStyle={{ fontSize: 11, color: "var(--md-on-surface-variant)" }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
+                <p className="text-xs mb-4" style={{ color: "var(--md-on-surface-variant)" }}>
+                  vs SUV {settings.gasolineRefConsumptionL100km} L/100km · S/ {settings.gasolinePricePEN}/L
+                </p>
+                {monthlySavingsData.length > 0 ? (
+                  <div className="h-[260px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={monthlySavingsData} margin={{ left: -10 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--md-outline-variant)" />
+                        <XAxis dataKey="month" tick={axisStyle} />
+                        <YAxis tick={axisStyle} />
+                        <Tooltip
+                          content={<MD3Tooltip formatter={(v) => formatCurrency(v)} />}
+                        />
+                        <Bar
+                          dataKey="monthlySavings"
+                          name="Ahorro mensual"
+                          fill={colors.tertiary}
+                          radius={[4, 4, 0, 0]}
+                          opacity={0.7}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="cumulativeSavings"
+                          name="Acumulado"
+                          stroke={colors.tertiary}
+                          strokeWidth={2.5}
+                          dot={{ fill: colors.tertiary, r: 4, strokeWidth: 0 }}
+                          activeDot={{ r: 6, strokeWidth: 0 }}
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <p className="text-sm text-center py-8" style={{ color: "var(--md-on-surface-variant)" }}>
+                    Registra cargas para ver tu ahorro
+                  </p>
+                )}
               </div>
 
-              <div className="card-filled p-4">
-                <h3
-                  className="font-semibold text-sm mb-4"
-                  style={{ color: "var(--md-on-surface)" }}
-                >
-                  Ubicaciones de Carga
-                </h3>
-                <div className="h-[240px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={locationData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={95}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {locationData.map((entry, i) => (
-                          <Cell key={`cell-${i}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<MD3Tooltip />} />
-                      <Legend wrapperStyle={{ fontSize: 11, color: "var(--md-on-surface-variant)" }} />
-                    </PieChart>
-                  </ResponsiveContainer>
+              {/* CO2 impact card */}
+              <div className="card-filled p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <div
+                    className="w-8 h-8 rounded-[var(--shape-sm)] flex items-center justify-center"
+                    style={{ background: "var(--md-tertiary-container)", color: "var(--md-on-tertiary-container)" }}
+                  >
+                    <Leaf className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-semibold text-sm" style={{ color: "var(--md-on-surface)" }}>
+                    Huella de Carbono Evitada
+                  </h3>
                 </div>
+
+                <div className="flex items-end gap-4 mb-4">
+                  <div>
+                    <p className="text-3xl font-bold" style={{ color: "var(--md-tertiary)" }}>
+                      {eco.co2AvoidedKg.toFixed(1)}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--md-on-surface-variant)" }}>
+                      kg CO₂ evitado
+                    </p>
+                  </div>
+                  <div className="pb-1">
+                    <p className="text-lg font-semibold" style={{ color: "var(--md-on-surface)" }}>
+                      ≈ {eco.equivalentTrees.toFixed(1)} árbol{eco.equivalentTrees !== 1 ? "es" : ""}
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
+                      absorbidos/año
+                    </p>
+                  </div>
+                </div>
+
+                {/* CO₂ breakdown bar */}
+                {eco.totalKwhCharged > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
+                      <span>CO₂ emitido (red eléctrica)</span>
+                      <span className="font-medium" style={{ color: "var(--md-on-surface)" }}>
+                        {(eco.totalKwhCharged * (settings.co2GridIntensityGkwh / 1000)).toFixed(1)} kg
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs" style={{ color: "var(--md-on-surface-variant)" }}>
+                      <span>CO₂ equiv. gasolina (referencia)</span>
+                      <span className="font-medium" style={{ color: "var(--md-on-surface)" }}>
+                        {(eco.co2AvoidedKg + eco.totalKwhCharged * (settings.co2GridIntensityGkwh / 1000)).toFixed(1)} kg
+                      </span>
+                    </div>
+                    <div
+                      className="flex justify-between text-xs font-semibold pt-2"
+                      style={{ borderTop: "1px solid var(--md-outline-variant)", color: "var(--md-tertiary)" }}
+                    >
+                      <span>Diferencia (CO₂ evitado)</span>
+                      <span>{eco.co2AvoidedKg.toFixed(1)} kg</span>
+                    </div>
+                  </div>
+                )}
               </div>
+
+              {/* Monthly CO2 bar chart */}
+              {monthlySavingsData.length > 0 && (
+                <div className="card-filled p-4">
+                  <h3 className="font-semibold text-sm mb-4" style={{ color: "var(--md-on-surface)" }}>
+                    CO₂ Evitado por Mes (kg)
+                  </h3>
+                  <div className="h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={monthlySavingsData} margin={{ left: -10 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--md-outline-variant)" />
+                        <XAxis dataKey="month" tick={axisStyle} />
+                        <YAxis tick={axisStyle} />
+                        <Tooltip
+                          content={<MD3Tooltip formatter={(v) => `${v.toFixed(2)} kg`} />}
+                        />
+                        <Bar
+                          dataKey="co2Avoided"
+                          name="CO₂ evitado"
+                          fill={colors.tertiary}
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
             </TabsContent>
 
             {/* Cargas */}
             <TabsContent value="charging" className="space-y-4">
+              {/* kWh per month */}
               <div className="card-filled p-4">
-                <h3
-                  className="font-semibold text-sm mb-4"
-                  style={{ color: "var(--md-on-surface)" }}
-                >
+                <h3 className="font-semibold text-sm mb-4" style={{ color: "var(--md-on-surface)" }}>
                   kWh Cargados por Mes
                 </h3>
-                <div className="h-[240px]">
+                <div className="h-[220px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={kwhData} margin={{ left: -10 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--md-outline-variant)" />
@@ -387,6 +451,78 @@ export default function AnalyticsPage() {
                 </div>
               </div>
 
+              {/* Cost per kWh over time */}
+              {charges.length > 1 && (
+                <div className="card-filled p-4">
+                  <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--md-on-surface)" }}>
+                    Costo por kWh por Sesión
+                  </h3>
+                  <p className="text-xs mb-4" style={{ color: "var(--md-on-surface-variant)" }}>
+                    Solo costo energía, excluye estacionamiento
+                  </p>
+                  <div className="h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={[...charges]
+                          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                          .map((c) => ({
+                            date: new Date(c.date).toLocaleDateString("es-PE", { day: "2-digit", month: "short" }),
+                            costKwh: c.kwhCharged > 0
+                              ? (c.totalCost - c.parkingCostPEN) / c.kwhCharged
+                              : null,
+                          }))}
+                        margin={{ left: -10 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--md-outline-variant)" />
+                        <XAxis dataKey="date" tick={axisStyle} interval="preserveStartEnd" />
+                        <YAxis tick={axisStyle} />
+                        <Tooltip content={<MD3Tooltip formatter={(v) => `S/ ${v.toFixed(3)}`} />} />
+                        <Line
+                          type="monotone"
+                          dataKey="costKwh"
+                          name="S//kWh"
+                          stroke={colors.secondary}
+                          strokeWidth={2}
+                          connectNulls
+                          dot={{ fill: colors.secondary, r: 4, strokeWidth: 0 }}
+                          activeDot={{ r: 6, strokeWidth: 0 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
+              {/* Location distribution */}
+              {locationData.length > 0 && (
+                <div className="card-filled p-4">
+                  <h3 className="font-semibold text-sm mb-4" style={{ color: "var(--md-on-surface)" }}>
+                    Ubicaciones de Carga
+                  </h3>
+                  <div className="h-[220px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={locationData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={55}
+                          outerRadius={88}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {locationData.map((entry, i) => (
+                            <Cell key={`cell-${i}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<MD3Tooltip />} />
+                        <Legend wrapperStyle={{ fontSize: 11, color: "var(--md-on-surface-variant)" }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
               {/* Charging stats strip */}
               <div className="grid grid-cols-2 gap-3">
                 {[
@@ -402,21 +538,16 @@ export default function AnalyticsPage() {
                     ),
                   },
                   {
-                    label: "kWh promedio",
-                    value: formatKwh(
-                      charges.length > 0
-                        ? charges.reduce((s, c) => s + c.kwhCharged, 0) / charges.length
-                        : 0
-                    ),
+                    label: "S/ / kWh prom.",
+                    value: eco.avgCostPerKwh > 0
+                      ? `S/ ${eco.avgCostPerKwh.toFixed(3)}`
+                      : "—",
                   },
                 ].map((s) => (
                   <div key={s.label} className="card-outlined p-4 text-center">
                     <p
                       className="text-xl font-bold"
-                      style={{
-                        color: "var(--md-on-surface)",
-                        fontFamily: "var(--font-display, system-ui)",
-                      }}
+                      style={{ color: "var(--md-on-surface)", fontFamily: "var(--font-display, system-ui)" }}
                     >
                       {s.value}
                     </p>

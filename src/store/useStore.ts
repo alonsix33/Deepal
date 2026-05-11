@@ -112,6 +112,10 @@ const defaultSettings: Settings = {
   electricityRateKwh: 0.6861,
   batteryCapacity: 27.28,
   chargingEfficiency: 0.9,
+  gasolineRefConsumptionL100km: 7.5,
+  gasolinePricePEN: 5.87,
+  co2GridIntensityGkwh: 218,
+  evConsumptionKwh100km: 15.1,
 };
 
 export const useStore = create<AppState>()(
@@ -248,6 +252,11 @@ export const useStore = create<AppState>()(
                   electricityRateKwh: settingsData.electricityRateKwh,
                   batteryCapacity: settingsData.batteryCapacity,
                   chargingEfficiency: settingsData.chargingEfficiency,
+                  // Local-only eco-metric params — preserve user's value if already set
+                  gasolineRefConsumptionL100km: state.settings.gasolineRefConsumptionL100km ?? 7.5,
+                  gasolinePricePEN: state.settings.gasolinePricePEN ?? 5.87,
+                  co2GridIntensityGkwh: state.settings.co2GridIntensityGkwh ?? 218,
+                  evConsumptionKwh100km: state.settings.evConsumptionKwh100km ?? 15.1,
                 }
               : defaultSettings,
             isInitialized: true,
