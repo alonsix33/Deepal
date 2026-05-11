@@ -97,7 +97,7 @@ export default function AnalyticsPage() {
   const { charges, fuelUps, services, getDashboardStats, settings } = useStore();
   const stats = getDashboardStats();
   const colors = useChartColors();
-  const eco = useMemo(() => computeEcoMetrics(charges, settings), [charges, settings]);
+  const eco = useMemo(() => computeEcoMetrics(charges, fuelUps, settings), [charges, fuelUps, settings]);
 
   const monthlyData = useMemo(() => {
     const months: Record<string, { month: string; electric: number; fuel: number; maintenance: number }> = {};
@@ -167,8 +167,8 @@ export default function AnalyticsPage() {
   }, [charges]);
 
   const monthlySavingsData = useMemo(
-    () => computeMonthlySavings(charges, settings),
-    [charges, settings]
+    () => computeMonthlySavings(charges, fuelUps, settings),
+    [charges, fuelUps, settings]
   );
 
   const locationData = useMemo(() => {
@@ -323,7 +323,7 @@ export default function AnalyticsPage() {
                   Ahorro Acumulado vs Gasolina
                 </h3>
                 <p className="text-xs mb-4" style={{ color: "var(--md-on-surface-variant)" }}>
-                  vs SUV {settings.gasolineRefConsumptionL100km} L/100km · S/ {settings.gasolinePricePEN}/L
+                  vs SUV {settings.gasolineRefConsumptionL100km} L/100km · S/ {eco.effectiveGasolinePricePEN.toFixed(2)}/L
                 </p>
                 {monthlySavingsData.length > 0 ? (
                   <div className="h-[260px]">
