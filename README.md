@@ -444,6 +444,241 @@ Tipografía: **NOS** (custom, display) + **Space Grotesk** + **Inter**.
 
 ---
 
+## Guía para Desarrolladores — Errores Comunes y Decisiones de Diseño
+
+Esta sección documenta bugs reales que han ocurrido y las decisiones de diseño no obvias. Leer antes de tocar fechas, métricas o estado.
+
+---
+
+### 🚨 CRÍTICO: Fechas y Timezone (Lima = UTC-5)
+
+**El problema más recurrente del proyecto.**
+
+Lima está en UTC-5. PostgreSQL almacena `DateTime` en UTC. Cuando Prisma devuelve una fecha como `"2026-04-30T00:00:00.000Z"` y JavaScript la parsea con `new Date()`, el resultado en Lima es `2026-04-29T19:00:00` — el día anterior.
+
+```js
+// ❌ MAL — off-by-one en Lima a cualquier hora antes de medianoche UTC
+const month = new Date("2026-04-30").getMonth(); // → 2 (marzo) en Lima
+
+// ✅ BIEN — string slicing directo, sin parseo de fechas
+const yearMonth = charge.date.slice(0, 7);  // "2026-04"
+const year      = parseInt(charge.date.slice(0, 4), 10);
+const monthIdx  = parseInt(charge.date.slice(5, 7), 10) - 1; // 0-based
+const label     = new Date(year, monthIdx, 1).toLocaleDateString("es-PE", {
+  month: "short", year: "2-digit"
+});
+```
+
+**Regla absoluta:**
+- Agrupar por mes → `date.slice(0, 7)` como clave string `"YYYY-MM"`
+- Generar label de mes → `new Date(year, monthIdx, 1)` con enteros parseados del string
+- **Nunca** `new Date(dateString).getMonth()` para fechas que vienen de la API
+
+**Cómo se almacenan las fechas:**
+- Prisma → PostgreSQL: `DateTime` en UTC
+- API → Store: el store normaliza a `"YYYY-MM-DD"` haciendo `.toISOString().split("T")[0]`
+- Forms → API: se envía `"YYYY-MM-DDT${timeStr}:00"` en hora local
+- La clave `todayLocalISO()` en `utils.ts` retorna la fecha local correcta sin UTC offset
+
+---
+
+### 🚨 Recharts No Lee CSS Variables
+
+Recharts renderiza en un canvas/SVG fuera del contexto de los CSS custom properties de MD3. Pasarle `fill="var(--md-primary)"` resulta en color inválido.
+
+```js
+// ❌ MAL
+<Bar fill="var(--md-primary)" />
+
+// ✅ BIEN — usar los objetos de constantes con hex
+const CHART_COLORS = {
+  primary:  "#0057CC",
+  fuel:     "#8B4800",
+  secondary:"#4F5F7A",
+  tertiary: "#006C51",
+  outline:  "#717B89",
+};
+const CHART_COLORS_DARK = { /* versiones claras para dark mode */ };
+
+function useChartColors() {
+  if (typeof document !== "undefined") {
+    return document.documentElement.classList.contains("dark")
+      ? CHART_COLORS_DARK : CHART_COLORS;
+  }
+  return CHART_COLORS;
+}
+```
+
+Estos objetos viven en `src/app/analytics/page.tsx`. Si se añaden nuevos gráficos, usar siempre `useChartColors()`.
+
+---
+
+### 🚨 Zustand v5 — Tipo del `migrate()`
+
+Zustand v5 exige que `migrate()` retorne `S | Promise<S>` donde `S` es el tipo del estado completo (`AppState`). Retornar `Record<string, unknown>` falla en build.
+
+```ts
+// ❌ MAL — TypeScript error en build de Vercel
+migrate: (persistedState, fromVersion) => {
+  const state = persistedState as Record<string, unknown>;
+  // ...modificaciones...
+  return state; // TS error: Type 'Record<string, unknown>' is not assignable to 'AppState'
+}
+
+// ✅ BIEN
+migrate: (persistedState, fromVersion) => {
+  const state = persistedState as Record<string, unknown>;
+  // ...modificaciones...
+  return state as unknown as AppState;
+}
+```
+
+Cada vez que se añada un campo nuevo a `Settings` u otro slice del store, incrementar la versión de persist y agregar el campo con su default en `migrate()`.
+
+**Versión actual del store: `version: 4`**
+
+---
+
+### Decisión: `totalCost` incluye parking
+
+`Charge.totalCost = costoElectricidad + parkingCostPEN`
+
+Esto es **intencional**. El modelo de negocio del S05 REEV en Lima: los malls (Jockey Plaza, Larcomar, Real Plaza) ofrecen carga eléctrica gratuita como incentivo, pero el usuario paga estacionamiento. El costo real de ese evento de carga es el parking, aunque la energía sea gratis.
+
+Por tanto:
+- `isFree: true` + `parkingCostPEN: 12` → `totalCost: 12` ✓
+- `isFree: false` + `kwhRate: 1.99` + `kwhCharged: 8` + `parkingCostPEN: 0` → `totalCost: 15.92` ✓
+- En eco-métricas: `totalChargingCostOnly = Σ totalCost` — incluye parking siempre
+
+---
+
+### Decisión: Parámetros Eco son Local-Only
+
+`gasolineRefConsumptionL100km`, `gasolinePricePEN`, `co2GridIntensityGkwh`, `evConsumptionKwh100km` **no están en el schema de Prisma** — solo existen en el Zustand store (localStorage).
+
+Cuando `updateSettingsAsync()` sincroniza settings con la API, estos campos se excluyen deliberadamente (el endpoint `/api/settings` no los conoce). Si se necesita persistirlos en DB, hay que añadirlos al schema de Prisma y a la migración.
+
+---
+
+### Convención: Unidades de Gasolina
+
+| Contexto | Unidad | Campo |
+|----------|--------|-------|
+| Form de recarga | Galones US | `FuelUp.gallons` |
+| Form de recarga | S/ por galón | `FuelUp.costPerGallon` |
+| Costo total pagado | Soles | `FuelUp.costPEN` |
+| Eco-métricas internas | Litros | `gallons × 3.785411784` |
+| Setting referencia | L/100km | `gasolineRefConsumptionL100km` |
+| Precio gasolina interno | S/ por litro | `gasolinePricePEN` |
+| Display en Settings | S/ por galón | `gasolinePricePEN × 3.785411784` |
+
+En Perú las gasolineras venden por galón (ej. S/ 21.9/gal). La conversión exacta es `1 gal US = 3.785411784 L`.
+
+---
+
+### Convención: `kwhCharged` en el Modelo
+
+`Charge.kwhCharged` = kWh registrados por el cargador (energía que salió de la red/estación). El 10% de pérdida de carga no está descontado.
+
+En eco-métricas:
+```
+kwhNet = kwhCharged × chargingEfficiency   // lo que llega al motor
+estimatedElectricKm = kwhNet / (evConsumptionKwh100km / 100)
+```
+
+En el form de nueva carga, `kwhCharged` se calcula como:
+```
+kwhCharged = (batteryEndPercent - batteryStartPercent) / 100 × batteryCapacity
+```
+Esto aproxima lo cargado en batería (net). La eficiencia real del cargador varía por sesión pero 90% es el default conservador.
+
+---
+
+### Convención: Árbol — Pluralización
+
+`equivalentTrees` es un `Float`. Nunca comparar float con `!== 1`.
+
+```js
+// ❌ MAL — nunca es exactamente 1.0
+`árbol${eco.equivalentTrees !== 1 ? "es" : ""}`
+
+// ✅ BIEN
+`árbol${Math.round(eco.equivalentTrees) !== 1 ? "es" : ""}`
+```
+
+---
+
+### Convención: Colores por Categoría
+
+| Categoría | Token CSS | Hex (light) | Hex (dark) |
+|-----------|-----------|-------------|------------|
+| Eléctrico | `--md-primary` | `#0057CC` | `#A8C8FF` |
+| Combustible | `--color-fuel` | `#8B4800` | `#FFB870` |
+| Mantenimiento | `--color-service` | `#6750A4` | `#D0BCFF` |
+| Parking | `--color-parking` | `#6A5E00` | `#D9C700` |
+| Eco/CO₂ | `--md-tertiary` | `#006C51` | `#6BDBB1` |
+| Error/negativo | `--md-error` | `#B3261E` | — |
+
+Siempre usar los tokens CSS (`var(--...)`) en componentes React, excepto en Recharts donde se deben usar hex hardcodeados via `useChartColors()`.
+
+---
+
+### Convención: Odómetro Actual
+
+`vehicle.currentOdometer` se actualiza automáticamente cuando:
+- Se crea una `Charge` con `odometerEnd` mayor al actual
+- Se crea un `FuelUp` con `odometer` mayor al actual
+- Se crea un `Service` con `odometer` mayor al actual
+- Se agrega un `OdometerLog`
+
+El API de odómetro deriva el odómetro "verdadero actual" buscando el valor más reciente entre los cuatro tipos de registro, ordenados por fecha.
+
+---
+
+### Convención: Formato de Fechas en Forms
+
+```js
+// todayLocalISO() — fecha local correcta para el valor inicial de inputs de fecha
+export function todayLocalISO(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+// No usar: new Date().toISOString().split("T")[0] — da la fecha UTC, que en Lima
+// puede ser el día anterior a medianoche.
+```
+
+Al enviar a la API, los forms concatenan la hora local:
+```js
+const timeStr = new Date().toTimeString().slice(0, 5); // "HH:MM"
+date: `${formData.date}T${timeStr}:00`
+```
+
+---
+
+### Schema de Prisma — Notas
+
+- **Sin archivos de migración** — el proyecto usa `prisma db push` (push directo al schema). No hay directorio `prisma/migrations/`.
+- **Cascade delete**: borrar el Vehicle borra todas sus relaciones (charges, fuelUps, services, trips, odometerLogs).
+- **Trip model**: está en el schema y en los tipos TypeScript, pero sin API routes ni UI. Es un modelo reservado para uso futuro.
+- **PushSubscription**: tabla separada de `Settings`. Guarda endpoint + claves p256dh/auth por suscriptor. `Settings.pushSubscription` es un campo legacy (Text) que ya no se usa.
+
+---
+
+### Checklist al Agregar un Nuevo Campo a Settings
+
+1. Añadir el campo a `Settings` interface en `src/types/index.ts`
+2. Añadir default en `defaultSettings` en `useStore.ts`
+3. Incrementar `version` del persist en `useStore.ts`
+4. Añadir el campo con su default en la función `migrate()` del persist
+5. Si debe persistir en DB: añadir el campo al model `Settings` en `prisma/schema.prisma` y ejecutar `npm run db:push`
+6. Si es local-only: asegurar que `updateSettingsAsync()` no lo sobrescriba al sincronizar con la API
+7. Actualizar esta documentación
+
+---
+
 ## Licencia
 
 Proyecto personal. Sin licencia de distribución.
