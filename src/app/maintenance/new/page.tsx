@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { todayLocalISO } from "@/lib/utils";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useStore } from "@/store/useStore";
 import { SERVICE_TYPES } from "@/types";
@@ -15,7 +16,7 @@ export default function NewMaintenancePage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split("T")[0],
+    date: todayLocalISO(),
     odometer: vehicle.currentOdometer.toString(),
     serviceType: "",
     customServiceType: "",

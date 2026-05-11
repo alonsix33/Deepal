@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { SliderRow } from "@/components/ui/slider-row";
 import { BatteryBar } from "@/components/ui/battery-bar";
+import { todayLocalISO } from "@/lib/utils";
 
 function resolveLocation(location: string): { locationKey: string; customLocation: string } {
   if (location in CHARGE_LOCATIONS) return { locationKey: location, customLocation: "" };
@@ -49,7 +50,7 @@ export default function EditChargePage() {
     : { locationKey: "home", customLocation: "" };
 
   const [formData, setFormData] = useState({
-    date: charge ? new Date(charge.date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+    date: charge ? charge.date : todayLocalISO(),
     location: initLocationKey,
     customLocation: initCustomLocation,
     chargeType: (charge?.chargeType ?? "AC_7kW") as Charge["chargeType"],

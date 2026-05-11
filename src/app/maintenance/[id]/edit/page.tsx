@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { todayLocalISO } from "@/lib/utils";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useStore } from "@/store/useStore";
 import { SERVICE_TYPES } from "@/types";
@@ -23,7 +24,7 @@ export default function EditMaintenancePage() {
   const knownType = service ? SERVICE_TYPES.includes(service.serviceType) : false;
 
   const [formData, setFormData] = useState({
-    date: service ? new Date(service.date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+    date: service ? service.date : todayLocalISO(),
     odometer: String(service?.odometer ?? 0),
     serviceType: service ? (knownType ? service.serviceType : "Otro") : "",
     customServiceType: service && !knownType ? service.serviceType : "",

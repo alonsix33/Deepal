@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { todayLocalISO } from "@/lib/utils";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useStore } from "@/store/useStore";
 import { ArrowLeft, Fuel, Save, Loader2, Trash2, MapPin, FileText, Gauge } from "lucide-react";
@@ -21,7 +22,7 @@ export default function EditFuelPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    date: fuelUp ? new Date(fuelUp.date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+    date: fuelUp ? fuelUp.date : todayLocalISO(),
     odometer: String(fuelUp?.odometer ?? 0),
     gallons: fuelUp ? String(fuelUp.gallons) : "",
     costPEN: fuelUp ? String(fuelUp.costPEN) : "",

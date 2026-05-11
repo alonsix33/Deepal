@@ -5,6 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Returns today's date as "YYYY-MM-DD" in the user's local timezone.
+// new Date().toISOString() returns UTC, which is wrong for users behind UTC
+// (e.g. Peru UTC-5: 8 PM on May 10 → ISO gives "2026-05-11").
+export function todayLocalISO(): string {
+  const d = new Date();
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
 export function formatCurrency(amount: number, currency: string = "PEN"): string {
   if (currency === "PEN") {
     return `S/ ${amount.toFixed(2)}`;

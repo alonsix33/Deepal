@@ -23,7 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useStore } from "@/store/useStore";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, todayLocalISO } from "@/lib/utils";
 import {
   registerServiceWorker,
   subscribeToPushNotifications,
@@ -172,7 +172,7 @@ export default function SettingsPage() {
   } = useStore();
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [odometerForm, setOdometerForm] = useState({
-    date: new Date().toISOString().split("T")[0],
+    date: todayLocalISO(),
     odometer: "",
     notes: "",
   });
